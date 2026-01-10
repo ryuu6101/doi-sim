@@ -2,24 +2,29 @@
 
 namespace App\Http\Controllers\Admins;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\View;
 
 class SectionController extends Controller
 {
-    public function home() {
-        $file = file_get_contents(storage_path('app\Login.txt'));
+    public function __construct() {
         $info = [];
-        if ($file) $info = explode("\n", $file);
+        if (file_exists(storage_path('app\Login.txt'))) {
+            $file = file_get_contents(storage_path('app\Login.txt'));
+            $info = explode("\n", $file);
+        }
 
-        $username = $info[0] ?? '';
-        $password = $info[1] ?? '';
-        $cookies = $info[2] ?? '';
+        View::share('username', $info[0] ?? '');
+        View::share('password', $info[1] ?? '');
+        View::share('cookies', $info[2] ?? '');
+    }
 
-        return view('admins.sections.home.index')->with([
-            'username' => $username,
-            'password' => $password,
-            'cookies' => $cookies,
-        ]);
+    public function home() {
+        return view('admins.sections.home.index');
+    }
+
+    public function msinCheck() {
+        return view('admins.sections.msin-check.index');
     }
 }

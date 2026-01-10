@@ -34,7 +34,6 @@ class LoginController extends Controller
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $postData,
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_HEADER => true,
                 CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
                 CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
                 CURLOPT_HTTPHEADER => [
@@ -55,17 +54,16 @@ class LoginController extends Controller
                 $data['message'] = "Không có quyền truy cập";
                 return $data;
             }
-            
-            // Separate headers and body
-            $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-            $headers = substr($response, 0, $header_size);
-            $body = trim(substr($response, $header_size));
 
             // Handle response
-            if ($body == 0) {
-                // Extract cookies from headers
-                preg_match_all('/^Set-Cookie:\\s*([^;]*)/mi', $headers, $matches);
-                $datacookie = !empty($matches[1]) ? implode('; ', $matches[1]) : '';
+            if ($response == 0) {
+                $cookies_list = curl_getinfo($ch, CURLINFO_COOKIELIST);
+                $cookies_arr = [];
+                foreach ($cookies_list as $key => $value) {
+                    $splited = explode("\t", $value);
+                    $cookies_arr[] = $splited[5].'='.$splited[6];
+                }
+                $datacookie = implode('; ', ($cookies_arr));
 
                 // Call GetImage function (non-blocking)
                 $this->getImage($datacookie);
@@ -81,7 +79,7 @@ class LoginController extends Controller
                     1 => "Tài khoản không chính xác",
                     2 => "Đăng nhập không thành công. HRM: mã HRM không tồn tại!",
                     4 => "OTP không chính xác",
-                ][$body] ?? "Tài khoản không hợp lệ";
+                ][$response] ?? "Tài khoản không hợp lệ";
             }
 
         } catch (Exception $e) {
