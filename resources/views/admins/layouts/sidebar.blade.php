@@ -8,9 +8,9 @@
         <div class="sidebar-section sidebar-user my-1">
             <div class="sidebar-section-body">
                 <div class="media">
-                    <a href="#" class="mr-3">
+                    <span class="mr-3">
                         <img src="{{ asset('global_assets/images/placeholders/placeholder.jpg') }}" class="rounded-circle" alt="">
-                    </a>
+                    </span>
 
                     <div class="media-body">
                         <div class="font-weight-semibold">CNPT</div>
@@ -40,20 +40,23 @@
                     <i class="icon-menu" title="Main"></i>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('home.index') }}" class="nav-link">
-                        <i class="icon-home4"></i>
-                        <span>
-                            Đổi sim - Lấy QR
-                        </span>
+                    <a href="{{ route('home.index') }}" class="nav-link {{ request()->routeIs('home.index') ? 'active' : '' }}">
+                        <i class="fa-solid fa-repeat"></i>
+                        <span>Đổi sim - Lấy QR</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a href="{{ route('msin-check.index') }}" class="nav-link">
-                        <i class="icon-home4"></i>
-                        <span>
-                            Kiểm tra MSIN
-                        </span>
+                    <a href="{{ route('msin-check.index') }}" class="nav-link {{ request()->routeIs('msin-check.index') ? 'active' : '' }}">
+                        <i class="fa-solid fa-sim-card"></i>
+                        <span>Kiểm tra MSIN</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ route('mobile-check.index') }}" class="nav-link {{ request()->routeIs('mobile-check.index') ? 'active' : '' }}">
+                        <i class="fa-solid fa-phone"></i>
+                        <span>Kiểm tra thuê bao</span>
                     </a>
                 </li>
 

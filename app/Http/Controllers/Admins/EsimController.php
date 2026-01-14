@@ -267,12 +267,87 @@ class EsimController extends Controller
             ]);
 
             $response = curl_exec($ch);
-            $KQ = $this->getStringData($response, "ttin_add");
+            $kqua_chk = $this->getStringData($response, "kqua_chk");
+            $ttin_add = $this->getStringData($response, "ttin_add");
+            // dd($response, $kqua_chk, $ttin_add);
 
-            if ($KQ > 0) return "Sim đã gắn cho thuê bao ".$KQ;
-            if ($KQ === 0) return "Sim chưa được sử dụng";
+            if ($kqua_chk === "1") return "Sim đã gắn cho thuê bao |".$ttin_add;
+            if ($kqua_chk === "2") return "Sim đã bị hủy do CAN thuê bao";
+            if ($kqua_chk === "3") return "Sim đã bị hủy do đổi SIM";
+            if ($kqua_chk === "4") return "Sim chưa được kích hoạt";
+            if ($kqua_chk === "0") return "Sim mới";
             return "Sim không tồn tại";
+        } catch (Exception $e) {
+            return "Vui lòng đăng nhập lại!";
+        }
+    }
 
+    public function layIMEI(Request $request) {
+        $sdt = $request->input('sdt');
+
+        $ch = curl_init();
+
+        try {
+            $timestamp = now()->getPreciseTimestamp(3);
+
+            $postData = "callCount=1".PHP_EOL;
+            $postData .= "c0-scriptName=NEORemoting".PHP_EOL;
+            $postData .= "c0-methodName=getRec".PHP_EOL;
+            $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinacore_new.layTTThueBao_v4('".$sdt."'%2C'0')".PHP_EOL;
+            $postData .= "c0-param1=boolean:false".PHP_EOL;
+            $postData .= "xml=true".PHP_EOL;
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getRec.dwr",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => $this->httpHeader
+            ]);
+
+            $response = curl_exec($ch);
+            $so_msin = $this->getStringData($response, "so_msin");
+            $ma_tinh = $this->getStringData($response, "ma_tinh");
+
+            if (isset($so_msin) && $so_msin != "") return $so_msin."|".$ma_tinh;
+            return "Vui lòng đăng nhập lại!";
+        } catch (Exception $e) {
+            return "Vui lòng đăng nhập lại!";
+        }
+    }
+
+    public function layTTTBao(Request $request) {
+        $sdt = $request->input('sdt');
+        $matinh = $request->input('matinh');
+
+        $ch = curl_init();
+
+        try {
+            $timestamp = now()->getPreciseTimestamp(3);
+
+            $postData = "callCount=1".PHP_EOL;
+            $postData .= "c0-scriptName=DataRemoting".PHP_EOL;
+            $postData .= "c0-methodName=getRec".PHP_EOL;
+            $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinacore.layTTKhTb('".$sdt."'%2C'".$matinh."')".PHP_EOL;
+            $postData .= "c0-param1=boolean:false".PHP_EOL;
+            $postData .= "xml=true".PHP_EOL;
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getRec.dwr",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => $this->httpHeader
+            ]);
+
+            $response = curl_exec($ch);
+            $ten_tb = $this->getStringData($response, "ten_tb");
+            // dd($response, $ten_tb);
+
+            if (isset($ten_tb) && $ten_tb != "") return html_entity_decode($ten_tb);
+            return "Vui lòng đăng nhập lại!";
         } catch (Exception $e) {
             return "Vui lòng đăng nhập lại!";
         }

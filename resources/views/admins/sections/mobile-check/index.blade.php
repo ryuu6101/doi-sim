@@ -38,9 +38,9 @@
                 <thead class="text-nowrap">
                     <tr>
                         <th class="text-center" style="width:5rem">STT</th>
-                        <th class="text-center">Số MSIN</th>
                         <th class="text-center">Số thuê bao</th>
-                        <th class="text-center">Ghi chú</th>
+                        <th class="text-center">Số IMEI</th>
+                        <th class="text-center">Chủ thuê bao</th>
                     </tr>
                 </thead>
                 <tbody id="progress_list">
@@ -77,7 +77,7 @@
             }
 
             lines = list.split("\n").filter((line) => {return line != ""}).map((line) => {
-                if (line.length > 10) return line.slice(9, 19);
+                if (line.length < 11) return "84"+line;
                 return line;
             });
             index = 0;
@@ -112,31 +112,51 @@
 
             $('#progress_list').append(row);
 
-            await checkmsin(row, line);
+            let matinh = await layIMEI(row, line);
+            await layTTKhTb(row, line, matinh ?? '');
 
             if (index < total) timeout = setTimeout(chay, delay * 1000);
             else stop();
         }
 
-        async function checkmsin(row, msin) {
-            let sdt = row.children().eq(2);
-            let ghichu = row.children().eq(3);
-            sdt.text('Đang tìm kiếm ...');
+        async function layIMEI(row, sdt) {
+            let cell = row.children().eq(2);
+            cell.text('Đang tìm kiếm ...');
 
             try {
                 let result = await $.ajax({
                     type: 'POST',
-                    url: "{{ route('check-msin.post') }}",
-                    data: {'msin': msin},
+                    url: "{{ route('lay-imei.post') }}",
+                    data: {'sdt': sdt},
                 });
 
                 let tach = result.split("|");
 
-                if (tach.length > 1) sdt.text(tach[1].slice(-9));
-                else sdt.text('');
-                ghichu.text(result.replace("|", ""));
+                cell.text(tach[0]);
+
+                return tach[1] ?? '';
             } catch (error) {
-                sdt.text('Lỗi ngoại biên!');
+                cell.text('Lỗi ngoại biên!');
+            }
+        }
+
+        async function layTTKhTb(row, sdt, matinh) {
+            let cell = row.children().eq(3);
+            cell.text('Đang tìm kiếm ...');
+
+            try {
+                let result = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('lay-tttb.post') }}",
+                    data: {
+                        'sdt': sdt,
+                        'matinh': matinh,
+                    },
+                });
+
+                cell.text(result);
+            } catch (error) {
+                cell.text('Lỗi ngoại biên!');
             }
         }
 

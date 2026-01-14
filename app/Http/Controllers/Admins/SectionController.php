@@ -27,4 +27,8 @@ class SectionController extends Controller
     public function msinCheck() {
         return view('admins.sections.msin-check.index');
     }
+
+    public function mobileCheck() {
+        return view('admins.sections.mobile-check.index');
+    }
 }

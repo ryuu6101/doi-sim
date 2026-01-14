@@ -9,7 +9,6 @@
 
 	<!-- Global stylesheets -->
 	<link href="https://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,900" rel="stylesheet" type="text/css">
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet">
 	<link href="{{ asset('global_assets/css/icons/icomoon/styles.min.css') }}" rel="stylesheet" type="text/css">
 	<link href="{{ asset('assets/css/all.min.css') }}" rel="stylesheet" type="text/css">
 	<!-- /global stylesheets -->
@@ -20,12 +19,6 @@
 	<!-- /core JS files -->
 
 	<!-- Theme JS files -->
-	<script src="{{ asset('global_assets/js/plugins/visualization/d3/d3.min.js') }}"></script>
-	<script src="{{ asset('global_assets/js/plugins/visualization/d3/d3_tooltip.js') }}"></script>
-	<script src="{{ asset('global_assets/js/plugins/ui/moment/moment.min.js') }}"></script>
-	<script src="{{ asset('global_assets/js/plugins/pickers/daterangepicker.js') }}"></script>
-	<script src="{{ asset('global_assets/js/plugins/notifications/noty.min.js') }}"></script>
-
 	<script src="{{ asset('assets/js/app.js') }}"></script>
 	<!-- /theme JS files -->
 
@@ -34,12 +27,11 @@
 
 <body>
 
-    @include('admins.layouts.navbar')
+    @include('auth.layouts.navbar')
+
 
 	<!-- Page content -->
 	<div class="page-content">
-
-		@include('admins.layouts.sidebar')
 
 		<!-- Main content -->
 		<div class="content-wrapper">
@@ -47,38 +39,24 @@
 			<!-- Inner content -->
 			<div class="content-inner">
 
-				@include('admins.layouts.header')
-
 				<!-- Content area -->
-				<div class="content">
+				<div class="content d-flex justify-content-center align-items-center">
 
-					@yield('content')
+                    @yield('content')
 
 				</div>
+				<!-- /content area -->
 
-				@include('admins.layouts.footer')
+				@include('auth.layouts.footer')
 
 			</div>
+			<!-- /inner content -->
 
 		</div>
+		<!-- /main content -->
 
 	</div>
-
-	<script>
-		$.ajaxSetup({
-			headers: {
-				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-			}
-		});
-
-		$(document).ajaxError(function(event, xhr, settings, thrownError) {
-			if (xhr.status === 419) {
-				// Redirect to the current page to refresh the token
-				alert('Vui lòng tải lại trang!');
-				window.location.reload();
-			}
-		});
-	</script>
+	<!-- /page content -->
 
 	<script>
 		// Override Noty defaults

@@ -33,7 +33,7 @@
 
 @push('scripts')
 <script>
-    var cookies = "{{ $cookies }}";
+    let cookies = "{{ $cookies }}";
 
     $(document).ready(function() {
         $(document).on('click', '.btn-login', function() {
@@ -49,7 +49,7 @@
 
             $.ajax({
                 type: 'POST',
-                url: "{{ route('login.auth') }}",
+                url: "{{ route('ccbs-login.post') }}",
                 data: {
                     'username': username,
                     'password': password,

@@ -1,7 +1,7 @@
 @extends('admins.layouts.master')
 
 @section('content')
-<div class="row flex-lg-nowrap">
+<div class="row flex-lg-nowrap align-items-start">
 
     <div class="col-lg-auto col-12 mb-2">
         <div class="card">
@@ -28,29 +28,34 @@
                 <hr>
 
                 <div class="row mb-2">
-                    <div class="col-6">
-                        <button class="btn btn-outline-success btn-block btn-run">
-                            <i class="fa-solid fa-play mr-2"></i>CHẠY
+                    <div class="col-4">
+                        <button class="btn btn-outline-success btn-block btn-run text-nowrap">
+                            <i class="fa-solid fa-play mr-1"></i>CHẠY
                         </button>
                     </div>
-                    <div class="col-6">
-                        <button class="btn btn-outline-secondary btn-block btn-stop">
-                            <i class="fa-solid fa-pause mr-2"></i>DỪNG
+                    <div class="col-4">
+                        <button class="btn btn-outline-secondary btn-block btn-stop text-nowrap" disabled>
+                            <i class="fa-solid fa-pause mr-1"></i>DỪNG
+                        </button>
+                    </div>
+                    <div class="col-4">
+                        <button class="btn btn-outline-danger btn-block btn-reset text-nowrap">
+                            <i class="fa-solid fa-trash mr-1"></i>XÓA
                         </button>
                     </div>
                 </div>
 
                 <div class="row mb-2">
                     <div class="col">
-                        <textarea name="list" cols="30" rows="5" class="form-control border-dark rounded-0 bg-light w-lg-auto w-100"></textarea>
+                        <textarea name="list" rows="5" class="form-control border-dark rounded-0 bg-light w-100"></textarea>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col">
-        <div class="table-responsive">
+    <div class="col table-responsive">
+        {{-- <div class=""> --}}
             <table class="table table-bordered table-xs bg-white">
                 <thead class="text-nowrap">
                     <tr>
@@ -72,14 +77,14 @@
                     </tr>
                 </tfoot>
             </table>
-        </div>
+        {{-- </div> --}}
     </div>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-    var thongbaos = {
+    let thongbaos = {
         "1" : "Đã đặt lệnh đổi SIM cho số thuê bao", 
         "2" : "Đã đặt lệnh đổi SIM cho số thuê bao (có tạo AC cho SIM mới)", 
         "-1000" : "Lỗi khi đổi SIM cho thuê bao  (do khác tỉnh quản lý!!!)", 
@@ -88,24 +93,22 @@
         "4006" : " Thuê bao không có trên hệ thống IN-Comv ", 
     };
 
-    var doi_sim = true;
-    var lay_qr = true;
-    var delay = 1;
-    var lines = [];
-    var index = 0;
-    var total = 0;
+    let doi_sim = true;
+    let lay_qr = true;
+    let delay = 5;
+    let timeout;
+    let lines = [];
+    let index = 0;
+    let total = 0;
 
     $(document).ready(function() {
-        $(document).on('input', 'input[name="delay"]', function() {
-            if ($(this).val() < 0) $(this).val(0);
-        });
+        $('.sidebar.sidebar-main').addClass("sidebar-main-resized");
 
         $(document).on('click', '.btn-run', function() {
             let list = $('textarea[name="list"]').val();
 
             doi_sim = $('input[name="doi_sim"]').is(":checked");
             lay_qr = $('input[name="lay_qr"]').is(":checked");
-            delay = $('input[name="delay"]').val() ?? 1;
 
             if (cookies == '') {
                 noty('Không có Cookie, đăng nhập lại để tiếp tục!', 'error');
@@ -128,10 +131,20 @@
 
             $('#progress_list').html('');
             $('#tb_footer').removeClass('d-none');
-            $('#tb_footer').html('<i class="fa-solid fa-spinner spinner ml-2"></i>Vui lòng không đóng hoặc tải lại trang');
+            $('#tb_footer').html('<span class="spinner spinner-border spinner-border-sm mr-1"></span>Vui lòng không đóng hoặc tải lại trang');
             $('.btn-run').prop('disabled', true);
+            $('.btn-stop').prop('disabled', false);
 
             chay();
+        });
+
+        $(document).on('click', '.btn-stop', function() {
+            clearTimeout(timeout);
+            stop();
+        });
+
+        $(document).on('click', '.btn-reset', function() {
+            $('textarea[name="list"]').val("");
         });
 
         async function chay() {
@@ -151,7 +164,7 @@
             if (doi_sim) await doisim(row, boline) && lay_qr && await layqr(row, boline);
             else if (lay_qr) await layqr(row, boline);
 
-            if (index < total) setTimeout(chay, delay * 1000);
+            if (index < total) timeout = setTimeout(chay, delay * 1000);
             else stop();
         }
 
@@ -255,6 +268,7 @@
 
         function stop() {
             $('.btn-run').prop('disabled', false);
+            $('.btn-stop').prop('disabled', true);
             $('#tb_footer').addClass('d-none');
             $('#tb_footer').html('‎');
         }
