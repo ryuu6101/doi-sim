@@ -47,7 +47,11 @@
 			<!-- Inner content -->
 			<div class="content-inner">
 
+				@if (request()->is('ccos/*'))
+				@include('admins.layouts.header-cookie')
+				@else
 				@include('admins.layouts.header')
+				@endif
 
 				<!-- Content area -->
 				<div class="content">
@@ -63,6 +67,8 @@
 		</div>
 
 	</div>
+
+	@stack('modals')
 
 	<script>
 		$.ajaxSetup({

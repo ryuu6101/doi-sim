@@ -15,9 +15,15 @@ class SectionController extends Controller
             $info = explode("\n", $file);
         }
 
+        $cookies_ccos = "";
+        if (file_exists(storage_path('app\CookiesCcos.txt'))) {
+            $cookies_ccos = file_get_contents(storage_path('app\CookiesCcos.txt'));
+        }
+
         View::share('username', $info[0] ?? '');
         View::share('password', $info[1] ?? '');
         View::share('cookies', $info[2] ?? '');
+        View::share('cookies_ccos', $cookies_ccos);
     }
 
     public function home() {
@@ -30,5 +36,9 @@ class SectionController extends Controller
 
     public function mobileCheck() {
         return view('admins.sections.mobile-check.index');
+    }
+
+    public function miCheck() {
+        return view('admins.sections.mi-check.index');
     }
 }

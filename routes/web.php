@@ -16,6 +16,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', [SectionController::class, 'home'])->name('home.index');
     Route::get('/imei-check', [SectionController::class, 'msinCheck'])->name('msin-check.index');
     Route::get('/mobile-check', [SectionController::class, 'mobileCheck'])->name('mobile-check.index');
+    Route::get('/ccos/tra-cuu-mi', [SectionController::class, 'miCheck'])->name('mi-check.index');
     
     Route::post('/ccbs-login', [LoginController::class, 'ccbsLogin'])->name('ccbs-login.post');
     Route::post('/doi-sim', [EsimController::class, 'doiSim'])->name('doi-sim.post');
@@ -24,6 +25,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/check-msin', [EsimController::class, 'checkMSIN'])->name('check-msin.post');
     Route::post('/lay-imei', [EsimController::class, 'layIMEI'])->name('lay-imei.post');
     Route::post('/lay-tttb', [EsimController::class, 'layTTTBao'])->name('lay-tttb.post');
+    Route::post('/save-cookie', [LoginController::class, 'saveCookie'])->name('save-cookie.post');
+    Route::post('/tra-cuu-mi', [EsimController::class, 'traCuuMI'])->name('tra-cuu-mi.post');
 });
 
 Route::get('/test', [EsimController::class, 'pdfTest']);

@@ -1,5 +1,29 @@
 @extends('admins.layouts.master')
 
+@push('styles')
+<style>
+    table.sortable th:not(.sorttable_nosort) {
+        cursor: pointer;
+    }
+    th.sorttable_sorted::after, 
+    th.sorttable_sorted_reverse::after {
+        font-family: "Font Awesome 7 Free";
+        display: inline-block;
+        margin-left: 0.5rem;
+    }
+    th.sorttable_sorted::after {
+        content: "\f0d7";
+        font-weight: 900;
+    }
+    th.sorttable_sorted_reverse::after {
+        content: "\f0d8";
+        font-weight: 900;
+    }
+    #sorttable_sortfwdind, #sorttable_sortrevind { display: none; }
+
+</style>
+@endpush
+
 @section('content')
 <div class="row flex-lg-nowrap">
     <div class="col-lg-auto col-12 mb-2">
@@ -34,17 +58,18 @@
     </div>
     <div class="col">
         <div class="table-responsive">
-            <table class="table table-bordered table-xs bg-white">
+            <table class="table table-bordered table-xs bg-white sortable">
                 <thead class="text-nowrap">
                     <tr>
-                        <th class="text-center" style="width:5rem">STT</th>
-                        <th class="text-center">Số thuê bao</th>
-                        <th class="text-center">Số IMEI</th>
-                        <th class="text-center">Chủ thuê bao</th>
+                        <th class="text-center sorttable_nosort" style="width:5rem">STT</th>
+                        <th class="text-center sorttable_nosort">Số thuê bao</th>
+                        <th class="text-center sorttable_nosort">Tên gói</th>
+                        <th class="text-center sorttable_numeric">Dung lượng tối đa</th>
+                        <th class="text-center sorttable_numeric">Dung lượng sử dụng</th>
                     </tr>
                 </thead>
                 <tbody id="progress_list">
-
+                    
                 </tbody>
                 <tfoot>
                     <tr>
@@ -55,9 +80,12 @@
         </div>
     </div>
 </div>
+
 @endsection
 
 @push('scripts')
+<script src="{{ asset('assets/js/sorttable.js') }}"></script>
+
 <script>
     let delay = 5;
     let timeout;
@@ -67,7 +95,7 @@
             let list = $('textarea[name="list"]').val();
 
             if (cookies == '') {
-                noty('Không có Cookie, đăng nhập lại để tiếp tục!', 'error');
+                noty('Vui lòng nhập Cookie!', 'error');
                 return;
             }
 
@@ -78,7 +106,7 @@
 
             lines = list.split("\n").filter((line) => {return line != ""}).map((line) => {
                 line = line.trim();
-                if (line.length < 11) return "84"+line;
+                if (line.length > 9) return line.slice(-9);
                 return line;
             });
             index = 0;
@@ -110,54 +138,37 @@
             row.append($('<td>' + (line ?? '') + '</td>'));
             row.append($('<td></td>'));
             row.append($('<td></td>'));
+            row.append($('<td></td>'));
 
             $('#progress_list').append(row);
 
-            let matinh = await layIMEI(row, line);
-            await layTTKhTb(row, line, matinh ?? '');
+            await traCuuMI(row, line);
 
             if (index < total) timeout = setTimeout(chay, delay * 1000);
             else stop();
         }
 
-        async function layIMEI(row, sdt) {
-            let cell = row.children().eq(2);
-            cell.text('Đang tìm kiếm ...');
+        async function traCuuMI(row, sdt) {
+            let name = row.children().eq(2);
+            let limit = row.children().eq(3);
+            let used = row.children().eq(4);
+
+            name.text('Đang tìm kiếm ...');
 
             try {
                 let result = await $.ajax({
                     type: 'POST',
-                    url: "{{ route('lay-imei.post') }}",
+                    url: "{{ route('tra-cuu-mi.post') }}",
                     data: {'sdt': sdt},
                 });
 
-                let tach = result.split("|");
+                let tach = result.split('|');
 
-                cell.text(tach[0]);
-
-                return tach[1] ?? '';
+                name.text(tach[0] ?? '');
+                limit.text(tach[1] ?? '');
+                used.text(tach[2] ?? '');
             } catch (error) {
-                cell.text('Lỗi ngoại biên!');
-            }
-        }
-
-        async function layTTKhTb(row, sdt, matinh) {
-            let cell = row.children().eq(3);
-            cell.text('Đang tìm kiếm ...');
-
-            try {
-                let result = await $.ajax({
-                    type: 'POST',
-                    url: "{{ route('lay-tttb.post') }}",
-                    data: {
-                        'sdt': sdt,
-                        'matinh': matinh,
-                    },
-                });
-
-                cell.text(result);
-            } catch (error) {
-                cell.text('Lỗi ngoại biên!');
+                name.text('Lỗi ngoại biên!');
             }
         }
 

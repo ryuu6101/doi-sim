@@ -133,4 +133,10 @@ class LoginController extends Controller
 
         return redirect()->route('login');
     }
+
+    public function saveCookie(Request $request) {
+        $cookies = $request->input('cookies');
+        file_put_contents(storage_path("app\CookiesCcos.txt"), $cookies);
+        return 1;
+    }
 }

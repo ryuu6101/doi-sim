@@ -60,6 +60,13 @@
                     </a>
                 </li>
 
+                <li class="nav-item">
+                    <a href="{{ route('mi-check.index') }}" class="nav-link {{ request()->routeIs('mi-check.index') ? 'active' : '' }}">
+                        <i class="fa-solid fa-signal"></i>
+                        <span>Tra cứu MI</span>
+                    </a>
+                </li>
+
                 </ul>
         </div>
         <!-- /main navigation -->
