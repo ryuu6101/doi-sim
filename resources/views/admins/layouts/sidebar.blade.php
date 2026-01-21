@@ -47,6 +47,13 @@
                 </li>
 
                 <li class="nav-item">
+                    <a href="{{ route('swap-imei.index') }}" class="nav-link {{ request()->routeIs('swap-imei.index') ? 'active' : '' }}">
+                        <i class="fa-solid fa-repeat"></i>
+                        <span>Đảo SIM</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a href="{{ route('msin-check.index') }}" class="nav-link {{ request()->routeIs('msin-check.index') ? 'active' : '' }}">
                         <i class="fa-solid fa-sim-card"></i>
                         <span>Kiểm tra MSIN</span>
@@ -64,6 +71,13 @@
                     <a href="{{ route('mi-check.index') }}" class="nav-link {{ request()->routeIs('mi-check.index') ? 'active' : '' }}">
                         <i class="fa-solid fa-signal"></i>
                         <span>Tra cứu MI</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ route('toggle-serivce.index') }}" class="nav-link {{ request()->routeIs('toggle-serivce.index') ? 'active' : '' }}">
+                        <i class="fa-solid fa-signal"></i>
+                        <span>Đóng mở dịch vụ</span>
                     </a>
                 </li>
 

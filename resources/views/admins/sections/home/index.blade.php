@@ -95,7 +95,7 @@
 
     let doi_sim = true;
     let lay_qr = true;
-    let delay = 5;
+    let delay = {{ $delay ?? 1 }};
     let timeout;
     let lines = [];
     let index = 0;

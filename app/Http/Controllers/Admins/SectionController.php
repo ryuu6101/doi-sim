@@ -24,6 +24,7 @@ class SectionController extends Controller
         View::share('password', $info[1] ?? '');
         View::share('cookies', $info[2] ?? '');
         View::share('cookies_ccos', $cookies_ccos);
+        View::share('delay', 2);
     }
 
     public function home() {
@@ -40,5 +41,13 @@ class SectionController extends Controller
 
     public function miCheck() {
         return view('admins.sections.mi-check.index');
+    }
+
+    public function swapIMEI() {
+        return view('admins.sections.swap-imei.index');
+    }
+
+    public function toggleServices() {
+        return view('admins.sections.toggle-services.index');
     }
 }

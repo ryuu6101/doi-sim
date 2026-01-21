@@ -59,8 +59,11 @@
 
 @push('scripts')
 <script>
-    let delay = 5;
+    let delay = {{ $delay ?? 1 }};
     let timeout;
+    let lines = [];
+    let index = 0;
+    let total = 0;
 
     $(document).ready(function() {
         $(document).on('click', '.btn-run', function() {

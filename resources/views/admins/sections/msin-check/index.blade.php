@@ -59,8 +59,11 @@
 
 @push('scripts')
 <script>
-    let delay = 5;
+    let delay = {{ $delay ?? 1 }};
     let timeout;
+    let lines = [];
+    let index = 0;
+    let total = 0;
 
     $(document).ready(function() {
         $(document).on('click', '.btn-run', function() {
@@ -108,7 +111,7 @@
 
             row.append($('<td class="text-center">' + (index) + '</td>'));
             row.append($('<td>' + (line ?? '') + '</td>'));
-            row.append($('<td></td>'));
+            row.append($('<td>Đang tìm kiếm ...</td>'));
             row.append($('<td></td>'));
 
             $('#progress_list').append(row);

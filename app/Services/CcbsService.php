@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use DOMXPath;
 use Exception;
+use DOMDocument;
 
 class CcbsService 
 {
@@ -38,7 +40,7 @@ class CcbsService
         $this->httpHeader = [
             "Origin: http://10.159.22.104",
             "X-Requested-With: XMLHttpRequest",
-            "Cookie: ".$this->info[2] ?? '',
+            // "Cookie: ".$this->info[2] ?? '',
             "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) 
                         AppleWebKit/537.36 (KHTML, like Gecko) 
                         Chrome/115.0.5790.102 Safari/537.36",
@@ -49,9 +51,105 @@ class CcbsService
         if (!is_dir($this->qrCodePath)) mkdir($this->qrCodePath, 0755, true);
     }
 
-    public function doiSim($sdt, $esim, $ghichu) {
+    public function ccbsLogin($username, $password) {
+        $data = [
+            'status' => 0,
+            'message' => 'Đã xảy ra lỗi!',
+        ];
+        
         $ch = curl_init();
 
+        try {
+            // Extract the last 6 characters and the rest
+            $c = substr($password, -6);
+            $np = substr($password, 0, strlen($password) - 6);
+            
+            // Prepare POST data
+            $postData = "1iutlomLork=gjsot5pl%7Btizout&1pl%7Btizout=tku4ysgxz%7Bo4rg%7Fu%7Bz4ykz%5BykxVgxgskzkx.%2F&username=" . 
+                        $username . "&password=" . $np . "&options=" . $c;
+            
+            // Set cURL options
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/main",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
+                CURLOPT_HTTPHEADER => [
+                    "Origin: http://10.159.22.104",
+                    "X-Requested-With: XMLHttpRequest",
+                    "Referer: http://10.159.22.104/ccbs/main?1iutlomLork=|otgiuxk5juoyosey",
+                    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) 
+                                AppleWebKit/537.36 (KHTML, like Gecko) 
+                                Chrome/115.0.5790.102 Safari/537.36",
+                    "Content-Type: application/x-www-form-urlencoded"
+                ]
+            ]);
+            
+            // Execute request
+            $response = curl_exec($ch);
+            
+            if ($response === false) {
+                $data['message'] = "Không có quyền truy cập";
+                return $data;
+            }
+
+            // Handle response
+            if ($response == 0) {
+                $cookies_list = curl_getinfo($ch, CURLINFO_COOKIELIST);
+                $cookies_arr = [];
+                foreach ($cookies_list as $key => $value) {
+                    $splited = explode("\t", $value);
+                    $cookies_arr[] = $splited[5].'='.$splited[6];
+                }
+                $datacookie = implode('; ', ($cookies_arr));
+
+                // Call GetImage function (non-blocking)
+                $this->getImage($datacookie);
+
+                // Save login info to file
+                file_put_contents(storage_path("app\Login.txt"), $username . "\n" . $password . "\n" . $datacookie . "\n10.155.156.56");
+
+                $data['status'] = 200;
+                $data['message'] = "Đăng nhập thành công";
+                $data['cookies'] = $datacookie;
+            } else {
+                $data['message'] = [
+                    1 => "Tài khoản không chính xác",
+                    2 => "Đăng nhập không thành công. HRM: mã HRM không tồn tại!",
+                    4 => "OTP không chính xác",
+                ][$response] ?? "Tài khoản không hợp lệ";
+            }
+        } catch (Exception $e) {
+            $data['message'] = "Không có quyền truy cập";
+        } finally {
+            curl_close($ch);
+        }
+
+        return $data;
+    }
+
+    public function getImage($cookies) {
+        try {
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/captcha/img.jsp?random=",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => [
+                    "Cookie: " . $cookies
+                ]
+            ]);
+            curl_exec($ch);
+            curl_close($ch);
+        } catch (Exception $e) {
+            // Ignore errors
+        }
+    }
+
+    public function doiSim($sdt, $esim, $ghichu) {
+        $ch = curl_init();
+        
         try {
             $timestamp = now()->getPreciseTimestamp(3);
 
@@ -68,6 +166,8 @@ class CcbsService
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $postData,
                 CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
                 CURLOPT_HTTPHEADER => $this->httpHeader,
             ]);
 
@@ -91,9 +191,9 @@ class CcbsService
                     CURLOPT_POSTFIELDS => $postData,
                 ]);
 
-                $response = curl_exec($ch);dd($response);
+                $response = curl_exec($ch);
                 $KQ = $this->getStringData($response, "kqua_chk");
-                $oked = $this->beetween($response, "var s0=\"", "\";");
+                $oked = $this->between($response, "var s0=\"", "\";");
 
                 if ($oked == null) return "Vui lòng đăng nhập lại!";
 
@@ -103,19 +203,20 @@ class CcbsService
             }
         } catch (Exception $e) {
             return "Lỗi ngoại biên!";
+        } finally {
+            curl_close($ch);
         }
-        return "Lỗi ngoại biên!";
     }
 
     function getStringData($input, $paramName) {
-        $data = $this->beetween($input, "s0['" . $paramName . "']=", ";");
+        $data = $this->between($input, "s0['" . $paramName . "']=", ";");
 
         if ($data == null)  return null;
 
-        return $this->beetween($input, "var " . $data . "=\"", "\";");
+        return $this->between($input, "var " . $data . "=\"", "\";");
     }
 
-    function beetween($x, $a, $b) {
+    function between($x, $a, $b) {
         $data = explode($a, $x);
         
         if (count($data) < 2) return null;
@@ -138,6 +239,8 @@ class CcbsService
             curl_setopt_array($ch, [
                 CURLOPT_URL => $getUrl,
                 CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
                 CURLOPT_HTTPHEADER => $this->httpHeader
             ]);
 
@@ -156,9 +259,10 @@ class CcbsService
 			if ($esim == "0" || $QRCode == "") return " Không có Esim";
 			return $QRCode."|".$Barcode;
         } catch (Exception $e) {
-
+            return "Lỗi ngoại biên!";
+        } finally {
+            curl_close($ch);
         }
-        return "Vui lòng đăng nhập lại!";
     }
 
     function taiAnh($ma, $bar, $sdt) {
@@ -171,6 +275,8 @@ class CcbsService
             curl_setopt_array($ch, [
                 CURLOPT_URL => $getUrl,
                 CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
                 CURLOPT_HTTPHEADER => $this->httpHeader
             ]);
 
@@ -185,6 +291,8 @@ class CcbsService
             // $this->convertAndCropPdf($response, 1, 993, 1558, $sdt);
         } catch (Exception $e) {
             return false;
+        } finally {
+            curl_close($ch);
         }
     }
 
@@ -236,6 +344,8 @@ class CcbsService
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $postData,
                 CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
                 CURLOPT_HTTPHEADER => $this->httpHeader
             ]);
 
@@ -252,6 +362,8 @@ class CcbsService
             return "Sim không tồn tại";
         } catch (Exception $e) {
             return "Vui lòng đăng nhập lại!";
+        } finally {
+            curl_close($ch);
         }
     }
 
@@ -274,6 +386,8 @@ class CcbsService
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $postData,
                 CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
                 CURLOPT_HTTPHEADER => $this->httpHeader
             ]);
 
@@ -285,10 +399,12 @@ class CcbsService
             return "Vui lòng đăng nhập lại!";
         } catch (Exception $e) {
             return "Vui lòng đăng nhập lại!";
+        } finally {
+            curl_close($ch);
         }
     }
 
-    public function layTTTBao($sdt, $matinh) {
+    public function layTTTBao($sdt, $matinh) {        
         $ch = curl_init();
 
         try {
@@ -307,6 +423,8 @@ class CcbsService
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $postData,
                 CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
                 CURLOPT_HTTPHEADER => $this->httpHeader
             ]);
 
@@ -318,6 +436,160 @@ class CcbsService
             return "Vui lòng đăng nhập lại!";
         } catch (Exception $e) {
             return "Vui lòng đăng nhập lại!";
+        } finally {
+            curl_close($ch);
+        }
+    }
+
+    function daoSim($sdt, $old_esim, $new_esim, $ghichu) {
+        $layIMEI = $this->layIMEI("84".$sdt);
+        $tach = explode('|', $layIMEI);
+
+        if (count($tach) <= 1) return $tach[0] ?? 'Đã xảy ra lỗi!';
+
+        $imei = $tach[0];
+        $matinh = $tach[1];
+
+        if ($imei != $old_esim) return "Số IMEI hiện tại không trùng khớp (".$sdt." - ".$imei.")";
+
+        $tttbao = $this->layTTTBao("84".$sdt, $matinh);
+
+        if (strcasecmp($tttbao, 'CÔNG TY CỔ PHẦN CÔNG NGHỆ CNPT') != 0) return $sdt." - ".$imei;
+
+        return $this->doiSim($sdt, $new_esim, $ghichu);
+    }
+
+    public function layDVu($sdt, $dich_vu) {
+        $ch = curl_init();
+
+        try {
+            $timestamp = now()->getPreciseTimestamp(3);
+
+            $postData = "callCount=1".PHP_EOL;
+            $postData .= "c0-scriptName=DataRemoting".PHP_EOL;
+            $postData .= "c0-methodName=getDoc".PHP_EOL;
+            $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinanv.docDvDky('".$sdt."')".PHP_EOL;
+            $postData .= "c0-param1=boolean:false".PHP_EOL;
+            $postData .= "xml=true".PHP_EOL;
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getDoc.dwr",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
+                CURLOPT_HTTPHEADER => $this->httpHeader
+            ]);
+
+            $response = curl_exec($ch);
+            $html = $this->between($response, "s0=\"", "\";");
+            // dd($html);
+            if ($html == "") return "Vui lòng đăng nhập lại!";
+
+            $dom = new DOMDocument();
+            @$dom->loadHTML(str_replace("\\","", $html));
+            $xpath = new DOMXPath($dom);
+
+            $dich_vu = is_array($dich_vu) ? $dich_vu : [$dich_vu];
+            $values = "checked";
+
+            foreach ($dich_vu as $key => $value) {
+                $checkbox = $xpath->query("//input[@type='checkbox' and @value='{$value}']");
+                $checked = $checkbox->item(0)->hasAttribute('checked');
+                $values .= "|".(int)$checked;
+            }
+
+            return $values;
+        } catch (Exception $e) {
+            return "Vui lòng đăng nhập lại!";
+        } finally {
+            curl_close($ch);
+        }
+    }
+
+    public function dmDVu($sdt, $dvu) {
+        $ch = curl_init();
+
+        try {
+            $timestamp = now()->getPreciseTimestamp(3);
+
+            $postData = "callCount=1".PHP_EOL;
+            $postData .= "c0-scriptName=NEORemoting".PHP_EOL;
+            $postData .= "c0-methodName=getValue".PHP_EOL;
+            $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinanv_4G.dmDV('".$sdt."'%2C'".$dvu."%2C'%2C''%2C'".$this->username."')".PHP_EOL;
+            $postData .= "c0-param1=boolean:false".PHP_EOL;
+            $postData .= "xml=true".PHP_EOL;
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getValue.dwr",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
+                CURLOPT_HTTPHEADER => $this->httpHeader
+            ]);
+
+            $response = curl_exec($ch);
+            $kqua = $this->between($response, "s0=\"", "\";");
+
+            if ($kqua == 1) return "THÀNH CÔNG";
+            return "THẤT BẠI";
+        } catch (Exception $e) {
+            return 'Đã xảy ra lỗi!';
+        } finally {
+            curl_close($ch);
+        }
+    }
+
+    public function test() {
+        $ch = curl_init();
+
+        try {
+            $timestamp = now()->getPreciseTimestamp(3);
+
+            $postData = "callCount=1".PHP_EOL;
+            $postData .= "c0-scriptName=DataRemoting".PHP_EOL;
+            $postData .= "c0-methodName=getDoc".PHP_EOL;
+            $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinanv.docDvDky('84918354555')".PHP_EOL;
+            $postData .= "c0-param1=boolean:false".PHP_EOL;
+            $postData .= "xml=true".PHP_EOL;
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
+                CURLOPT_HTTPHEADER => $this->httpHeader
+            ]);
+
+            $response = curl_exec($ch);
+            $html = $this->between($response, "s0=\"", "\";");
+            // dd($html);
+            $dom = new DOMDocument();
+            @$dom->loadHTML(str_replace("\\","", $html));
+            $xpath = new DOMXPath($dom);
+
+            $dich_vu = ['GPRS', 'CLIR', 'test'];
+            $values = "checked";
+
+            foreach ($dich_vu as $key => $value) {
+                $checkbox = $xpath->query("//input[@type='checkbox' and @value='{$value}']");
+                $checked = $checkbox->item(0)?->hasAttribute('checked') ?? -1;
+                $values .= "|".(int)$checked;
+            }
+            // dd($dom);
+            dd($values);
+        } catch (Exception $e) {
+            
+        } finally {
+            curl_close($ch);
         }
     }
 }

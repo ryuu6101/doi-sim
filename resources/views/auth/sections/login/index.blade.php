@@ -16,7 +16,7 @@
             </div>
 
             <div class="form-group form-group-feedback form-group-feedback-left">
-                <input type="text" class="form-control" placeholder="Username" name="username">
+                <input type="text" class="form-control" placeholder="Username" name="username" value="{{ old('username') }}">
                 <div class="form-control-feedback">
                     <i class="icon-user text-muted"></i>
                 </div>
@@ -27,6 +27,13 @@
                 <div class="form-control-feedback">
                     <i class="icon-lock2 text-muted"></i>
                 </div>
+            </div>
+
+            <div class="form-group d-flex align-items-center">
+                <label class="custom-control custom-checkbox">
+                    <input type="checkbox" name="remember" class="custom-control-input" {{ old('remember') ? 'checked' : '' }}>
+                    <span class="custom-control-label">Remember me</span>
+                </label>
             </div>
 
             <div class="form-group">

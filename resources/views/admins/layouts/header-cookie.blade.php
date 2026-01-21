@@ -1,30 +1,24 @@
 <!-- Page header -->
 <div class="page-header page-header-light">
     <div class="page-header-content header-elements-lg-inline">
-        <div class="page-header-content header-elements-lg-inline">
-            <div class="page-title d-flex pb-2">
-                <div class="row">
-                    <div class="col-lg-auto col-12 mb-lg-0 mb-2">
-                        <div class="row align-items-center justify-content-center login mb-2">
-                            <div class="col-auto col-form-label d-sm-block d-none">
-                                <strong>Cookie:</strong>
-                            </div>
-                            <div class="col-sm-auto col">
-                                <input type="text" class="form-control form-control-sm border-dark" name="cookies" value="{{ $cookies_ccos }}">
-                            </div>
-                            <div class="col-sm-auto col-auto">
-                                <button type="button" class="btn btn-sm btn-outline-primary btn-login">
-                                    <i class="fa-solid fa-floppy-disk mr-1"></i>
-                                    Lưu
-                                </button>
-                            </div>
-                            <div class="col-sm-auto col-auto d-none d-lg-block">
-                                <h5 class="cursor-pointer text-muted" data-toggle="modal" data-target="#huongDanLayCookie">
-                                    <i class="fa-regular fa-circle-question"></i>
-                                </h5>
-                            </div>
-                        </div>
-                    </div>
+        <div class="page-title d-flex pb-2 w-100">
+            <div class="row align-items-center justify-content-center login mb-2 w-100">
+                <div class="col-auto col-form-label d-sm-block d-none">
+                    <strong>Cookie:</strong>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control form-control-sm border-dark" name="cookies" value="{{ $cookies_ccos }}">
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-sm btn-outline-primary btn-login">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i>
+                        Lưu
+                    </button>
+                </div>
+                <div class="col-auto d-none d-lg-block">
+                    <h5 class="cursor-pointer text-muted" data-toggle="modal" data-target="#huongDanLayCookie">
+                        <i class="fa-regular fa-circle-question"></i>
+                    </h5>
                 </div>
             </div>
         </div>
