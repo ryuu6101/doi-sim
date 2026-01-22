@@ -81,7 +81,14 @@
                     </a>
                 </li>
 
-                </ul>
+                <li class="nav-item">
+                    <a href="{{ route('toggle-ioc.index') }}" class="nav-link {{ request()->routeIs('toggle-ioc.index') ? 'active' : '' }}">
+                        <i class="fa-solid fa-signal"></i>
+                        <span>Cắt mở IOC</span>
+                    </a>
+                </li>
+
+            </ul>
         </div>
         <!-- /main navigation -->
 

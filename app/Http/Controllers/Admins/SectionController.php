@@ -50,4 +50,8 @@ class SectionController extends Controller
     public function toggleServices() {
         return view('admins.sections.toggle-services.index');
     }
+
+    public function toggleIOC() {
+        return view('admins.sections.toggle-ioc.index');
+    }
 }

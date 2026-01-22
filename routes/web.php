@@ -19,6 +19,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/ccos/tra-cuu-mi', [SectionController::class, 'miCheck'])->name('mi-check.index');
     Route::get('/swap-imei', [SectionController::class, 'swapIMEI'])->name('swap-imei.index');
     Route::get('/toggle-serivces', [SectionController::class, 'toggleServices'])->name('toggle-serivce.index');
+    Route::get('/toggle-ioc', [SectionController::class, 'toggleIOC'])->name('toggle-ioc.index');
     
     Route::post('/ccbs-login', [EsimController::class, 'ccbsLogin'])->name('ccbs-login.post');
     Route::post('/doi-sim', [EsimController::class, 'doiSim'])->name('doi-sim.post');
@@ -32,6 +33,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/dao-sim', [EsimController::class, 'daoSim'])->name('dao-sim.post');
     Route::post('/lay-dvu', [EsimController::class, 'layDVu'])->name('lay-dvu.post');
     Route::post('/dm-dvu', [EsimController::class, 'dmDVu'])->name('dm-dvu.post');
+    Route::post('/lay-ioc', [EsimController::class, 'layIOC'])->name('lay-ioc.post');
+    Route::post('/catmo-ioc', [EsimController::class, 'catmoIOC'])->name('catmo-ioc.post');
 });
 
-Route::get('/test', [EsimController::class, 'test']);
+// Route::get('/test', [EsimController::class, 'test']);

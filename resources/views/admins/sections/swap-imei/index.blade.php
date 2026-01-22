@@ -7,6 +7,9 @@
         <div class="card">
             <div class="card-body">
                 <div class="row mb-2">
+                    <div class="col">
+                        <input type="text" name="ghichu" class="form-control border-dark" placeholder="Nhập ghi chú">
+                    </div>
                     <div class="col-auto">
                         <button class="btn btn-outline-success btn-block btn-run text-nowrap">
                             <i class="fa-solid fa-play mr-1"></i>CHẠY
@@ -22,11 +25,6 @@
                             <i class="fa-solid fa-trash mr-1"></i>XÓA
                         </button>
                     </div>
-                    {{-- <div class="col-auto">
-                        <button class="btn btn-outline-warning btn-block btn-expand text-nowrap">
-                            <i class="icon-transmission"></i>
-                        </button>
-                    </div> --}}
                 </div>
 
                 <div class="row mb-2">
@@ -44,6 +42,7 @@
                 <tr>
                     <th class="text-center" style="width:5rem">STT</th>
                     <th class="text-center">Số TB</th>
+                    <th class="text-center">IMEI cũ</th>
                     <th class="text-center">SIM</th>
                     <th class="text-center">Ghi chú</th>
                     <th class="text-center">Kết quả</th>
@@ -122,70 +121,65 @@
             let row = $('<tr></tr>');
 
             row.append($('<td class="text-center">' + (index) + '</td>'));
-            row.append($('<td>' + (boline[2] ?? '') + '</td>'));
+            row.append($('<td>' + (boline[0] ?? '') + '</td>'));
             row.append($('<td>' + (boline[1] ?? '') + '</td>'));
-            row.append($('<td>' + (boline[3] ?? '') + '</td>'));
+            row.append($('<td>' + (boline[2] ?? '') + '</td>'));
+            row.append($('<td>' + (boline[3] ?? $('input[name="ghichu"]').val() ?? '') + '</td>'));
             row.append($('<td></td>'));
 
             $('#progress_list').append(row);
 
-            await doisim(row, boline)
+            await doisim(row, boline);
 
             if (index < total) timeout = setTimeout(chay, delay * 1000);
             else stop();
         }
 
         function xulyChuoi(string) {
-            if (string.includes("母卡：")) string = xulyChuoiTQ(string);
+            let tach = string.match(/\d{7,20}/g);
+            let boline = [];
+            let imei_index = 1;
 
-            return string.split("\t").filter((boline) => {return boline != ""}).map((boline) => {
-                boline = boline.trim();
-                if (boline.length > 10) return boline.slice(9, 19);
-                return boline;
-            });
-        }
-
-        function xulyChuoiTQ(string) {
-            let tach = string.split(" ").filter((line) => {
-                return line != "" && line != "--紧急替换一下";
-            }).map((line) => {
-                return line.trim().replace("母卡：", "").replace("原iccid：", "").replace("替换iccid：", "");
+            tach.forEach(value => {
+                if (value.length == 7) boline[0] = '84'+value;
+                else if (value.length == 9) boline[0] = value;
+                else if (value.length == 10) boline[imei_index++] = value;
+                else if (value.length == 20) boline[imei_index++] = value.slice(9, 19);
             });
 
-            return tach[1] + "\t" + tach[2] + "\t" + tach[0];
+            let regex = new RegExp(tach.join("|"), "gi");
+            let ghichu = string.replace(regex, '').trim();
+
+            if (ghichu != '' && !ghichu.includes("母卡")) boline[3] = ghichu;
+
+            return boline;
         }
 
         async function doisim(row, boline) {
-            let sdt = boline[2] ?? '';
-            let old_esim = boline[0] ?? '';
-            let new_esim = boline[1] ?? '';
-            let ghichu = boline[3] ?? '';
-    
-            let note = row.children().eq(3);
-            let kqua = row.children().eq(4);
-            
+            let sdt = boline[0] ?? '';
+            let old_esim = boline[1] ?? '';
+            let new_esim = boline[2] ?? '';
+            let ghichu = boline[3] ?? $('input[name="ghichu"]').val() ?? '';
+
+            let note = row.children().eq(4);
+            let kqua = row.children().eq(5);
+
+            if (sdt == '') {
+                note.text('Không có SĐT!');
+                return;
+            }
+
+            if (old_esim == '') {
+                note.text('Không có IMEI!');
+                return;
+            }
+
             if (new_esim == '') {
                 note.text('Không có SIM!');
                 return;
             }
 
             try {
-                // let result = await $.ajax({
-                //     type: 'POST',
-                //     url: "{{ route('dao-sim.post') }}",
-                //     data: {
-                //         'sdt': sdt,
-                //         'old_esim': old_esim,
-                //         'new_esim': new_esim,
-                //         'ghichu': ghichu,
-                //     },
-                // });
-
-                // if (result.includes("|vl")) {
-                //     cell.text(thongbaos[result.replace("|vl", "")] ?? "Lỗi khi đổi SIM cho thuê bao #404");
-                // } else {
-                //     cell.text(result);
-                // }
                 kqua.text('Kiểm tra IMEI ...');
 
                 let lay_imei = await $.ajax({
@@ -245,9 +239,9 @@
                 });
 
                 if (doi_sim.includes("|vl")) {
-                    cell.text(thongbaos[doi_sim.replace("|vl", "")] ?? "Lỗi khi đổi SIM cho thuê bao #404");
+                    kqua.text(thongbaos[doi_sim.replace("|vl", "")] ?? "Lỗi khi đổi SIM cho thuê bao #404");
                 } else {
-                    cell.text(doi_sim);
+                    kqua.text(doi_sim);
                 }
 
             } catch (error) {

@@ -25,6 +25,12 @@
                     </div>
                 </div>
 
+                <div class="row mb-2">
+                    <div class="col">
+                        <input type="text" name="ghichu" class="form-control border-dark" placeholder="Nhập ghi chú">
+                    </div>
+                </div>
+
                 <hr>
 
                 <div class="row mb-2">
@@ -55,29 +61,27 @@
     </div>
 
     <div class="col table-responsive">
-        {{-- <div class=""> --}}
-            <table class="table table-bordered table-xs bg-white">
-                <thead class="text-nowrap">
-                    <tr>
-                        <th class="text-center">STT</th>
-                        <th class="text-center">Số TB</th>
-                        <th class="text-center">SIM</th>
-                        <th class="text-center">Ghi chú</th>
-                        <th class="text-center">Trạng thái</th>
-                        <th class="text-center">Link QR</th>
-                        <th class="text-center">QR Code</th>
-                    </tr>
-                </thead>
-                <tbody id="progress_list">
+        <table class="table table-bordered table-xs bg-white">
+            <thead class="text-nowrap">
+                <tr>
+                    <th class="text-center">STT</th>
+                    <th class="text-center">Số TB</th>
+                    <th class="text-center">SIM</th>
+                    <th class="text-center">Ghi chú</th>
+                    <th class="text-center">Trạng thái</th>
+                    <th class="text-center">Link QR</th>
+                    <th class="text-center">QR Code</th>
+                </tr>
+            </thead>
+            <tbody id="progress_list">
 
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="100%" class="text-center" id="tb_footer">(Chưa có dữ liệu)</td>
-                    </tr>
-                </tfoot>
-            </table>
-        {{-- </div> --}}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="100%" class="text-center" id="tb_footer">(Chưa có dữ liệu)</td>
+                </tr>
+            </tfoot>
+        </table>
     </div>
 </div>
 @endsection
@@ -154,7 +158,7 @@
             row.append($('<td class="text-center">' + (index) + '</td>'));
             row.append($('<td>' + (boline[0] ?? '') + '</td>'));
             row.append($('<td>' + (boline[1] ?? '') + '</td>'));
-            row.append($('<td>' + (boline[2] ?? '') + '</td>'));
+            row.append($('<td>' + (boline[2] ?? $('input[name="ghichu"]').val() ?? '') + '</td>'));
             row.append($('<td></td>'));
             row.append($('<td></td>'));
             row.append($('<td class="text-nowrap"></td>'));
@@ -169,9 +173,9 @@
         }
 
         async function doisim(row, boline) {
-            let sdt = boline[0];
-            let esim = boline[1];
-            let ghichu = boline[2];
+            let sdt = boline[0] ?? '';
+            let esim = boline[1] ?? '';
+            let ghichu = boline[2] ?? $('input[name="ghichu"]').val() ?? '';
     
             if (esim == '') {
                 row.children().eq(3).text('Không có SIM!');

@@ -121,6 +121,20 @@ class EsimController extends Controller
         return $this->ccbsService->dmDVu($sdt, $dvu);
     }
 
+    public function layIOC(Request $request) {
+        $sdt = $request->input('sdt');
+
+        return $this->ccbsService->layIOC($sdt);
+    }
+
+    public function catmoIOC(Request $request) {
+        $sdt = $request->input('sdt');
+        $goidi = $request->input('goidi');
+        $goiden = $request->input('goiden');
+
+        return $this->ccbsService->catmoIOC($sdt, $goidi, $goiden);
+    }
+
     public function test() {
         return $this->ccbsService->test();
     }

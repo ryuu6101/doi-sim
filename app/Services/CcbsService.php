@@ -539,7 +539,83 @@ class CcbsService
             if ($kqua == 1) return "THÀNH CÔNG";
             return "THẤT BẠI";
         } catch (Exception $e) {
-            return 'Đã xảy ra lỗi!';
+            return "Vui lòng đăng nhập lại!";
+        } finally {
+            curl_close($ch);
+        }
+    }
+
+    public function layIOC($sdt) {
+        $ch = curl_init();
+
+        try {
+            $timestamp = now()->getPreciseTimestamp(3);
+
+            $postData = "callCount=1".PHP_EOL;
+            $postData .= "c0-scriptName=NEORemoting".PHP_EOL;
+            $postData .= "c0-methodName=getRec".PHP_EOL;
+            $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinacore_new.layTTThueBao_v5('".$sdt."'%2C'0')".PHP_EOL;
+            $postData .= "c0-param1=boolean:false".PHP_EOL;
+            $postData .= "xml=true".PHP_EOL;
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getRec.dwr",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
+                CURLOPT_HTTPHEADER => $this->httpHeader
+            ]);
+
+            $response = curl_exec($ch);
+            $goi_di = $this->getStringData($response, "goi_di") ?? -1;
+            $goi_den = $this->getStringData($response, "goi_den") ?? -1;
+
+            return $goi_di."|".$goi_den;
+        } catch (Exception $e) {
+            return "Vui lòng đăng nhập lại!";
+        } finally {
+            curl_close($ch);
+        }
+    }
+
+    public function catmoIOC($sdt, $goidi, $goiden) {
+        $ch = curl_init();
+
+        try {
+            $timestamp = now()->getPreciseTimestamp(3);
+
+            $postData = "callCount=1".PHP_EOL;
+            $postData .= "c0-scriptName=NEORemoting".PHP_EOL;
+            $postData .= "c0-methodName=getValue".PHP_EOL;
+            $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinanv_4G.catmoICOC('0'%2C'".$goidi."'%2C'".$goiden."'%2C'".$sdt."'%2C'%3B'%2C''%2C'".
+                            $this->username."')".PHP_EOL;
+            $postData .= "c0-param1=boolean:false".PHP_EOL;
+            $postData .= "xml=true".PHP_EOL;
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getValue.dwr",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
+                CURLOPT_HTTPHEADER => $this->httpHeader
+            ]);
+
+            $response = curl_exec($ch);
+            
+            $layIOC = $this->layIOC($sdt);
+            $tach = explode("|", $layIOC);
+            if (count($tach) < 2) return "Vui lòng đăng nhập lại";
+
+            if ($tach[0] == $goidi && $tach[1] == $goiden) return "THÀNH CÔNG";
+            return "THẤT BẠI";
+        } catch (Exception $e) {
+            return "Vui lòng đăng nhập lại!";
         } finally {
             curl_close($ch);
         }
@@ -551,16 +627,22 @@ class CcbsService
         try {
             $timestamp = now()->getPreciseTimestamp(3);
 
+            $scriptName = 'NEORemoting';
+            $methodName = 'getRec';
+
             $postData = "callCount=1".PHP_EOL;
-            $postData .= "c0-scriptName=DataRemoting".PHP_EOL;
-            $postData .= "c0-methodName=getDoc".PHP_EOL;
+            $postData .= "c0-scriptName=".$scriptName.PHP_EOL;
+            $postData .= "c0-methodName=".$methodName.PHP_EOL;
             $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
-            $postData .= "c0-param0=string:neo.cmdv114.vinanv.docDvDky('84918354555')".PHP_EOL;
+            // $postData .= "c0-param0=string:neo.cmdv114.catmo_ioc.checkVSCC(%2284845674221%22%2C%22VNPT%20VSCC%22)".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinacore_new.layTTThueBao_v5('84845674221'%2C'0')".PHP_EOL;
+            // $postData .= "c0-param0=string:neo.cmdv114.vinanv_4G.catmoICOC('0'%2C'0'%2C'1'%2C'84845674221'%2C'%3B'%2C''%2C'cuongpp_dng')"
+            //              .PHP_EOL;
             $postData .= "c0-param1=boolean:false".PHP_EOL;
             $postData .= "xml=true".PHP_EOL;
 
             curl_setopt_array($ch, [
-                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr",
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/".$scriptName.".".$methodName.".dwr",
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $postData,
                 CURLOPT_RETURNTRANSFER => true,
@@ -570,24 +652,9 @@ class CcbsService
             ]);
 
             $response = curl_exec($ch);
-            $html = $this->between($response, "s0=\"", "\";");
-            // dd($html);
-            $dom = new DOMDocument();
-            @$dom->loadHTML(str_replace("\\","", $html));
-            $xpath = new DOMXPath($dom);
-
-            $dich_vu = ['GPRS', 'CLIR', 'test'];
-            $values = "checked";
-
-            foreach ($dich_vu as $key => $value) {
-                $checkbox = $xpath->query("//input[@type='checkbox' and @value='{$value}']");
-                $checked = $checkbox->item(0)?->hasAttribute('checked') ?? -1;
-                $values .= "|".(int)$checked;
-            }
-            // dd($dom);
-            dd($values);
+            dd($response);
         } catch (Exception $e) {
-            
+            return "Vui lòng đăng nhập lại!";
         } finally {
             curl_close($ch);
         }
