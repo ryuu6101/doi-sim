@@ -3,24 +3,24 @@
 @section('content')
 <div class="row align-items-start justify-content-start">
 
-    <div class="col-8 mb-2">
+    <div class="col-lg-8 col-12 mb-2">
         <div class="card">
             <div class="card-body">
                 <div class="row mb-2">
-                    <div class="col">
+                    <div class="col-12 col-lg mb-2 mb-lg-0">
                         <input type="text" name="ghichu" class="form-control border-dark" placeholder="Nhập ghi chú">
                     </div>
-                    <div class="col-auto">
+                    <div class="col-lg-auto col-4">
                         <button class="btn btn-outline-success btn-block btn-run text-nowrap">
                             <i class="fa-solid fa-play mr-1"></i>CHẠY
                         </button>
                     </div>
-                    <div class="col-auto">
+                    <div class="col-lg-auto col-4">
                         <button class="btn btn-outline-secondary btn-block btn-stop text-nowrap" disabled>
                             <i class="fa-solid fa-pause mr-1"></i>DỪNG
                         </button>
                     </div>
-                    <div class="col-auto">
+                    <div class="col-lg-auto col-4">
                         <button class="btn btn-outline-danger btn-block btn-reset text-nowrap">
                             <i class="fa-solid fa-trash mr-1"></i>XÓA
                         </button>
@@ -77,6 +77,7 @@
     let lines = [];
     let index = 0;
     let total = 0;
+    let phones = [];
 
     $(document).ready(function() {
         // $('.sidebar.sidebar-main').addClass("sidebar-main-resized");
@@ -97,6 +98,7 @@
             lines = list.split("\n").filter((line) => {return line != ""});
             index = 0;
             total = lines.length;
+            phones = [];
 
             $('#progress_list').html('');
             $('#tb_footer').removeClass('d-none');
@@ -136,21 +138,21 @@
         }
 
         function xulyChuoi(string) {
-            let tach = string.match(/\d{7,20}/g);
+            let tach = string.match(/\d{9,20}/g);
             let boline = [];
             let imei_index = 1;
+            let slice_pos = 0;
 
-            tach.forEach(value => {
-                if (value.length == 7) boline[0] = '84'+value;
-                else if (value.length == 9) boline[0] = value;
+            tach.forEach((value, index, self) => {
+                if (value.length == 9) boline[0] = value;
                 else if (value.length == 10) boline[imei_index++] = value;
                 else if (value.length == 20) boline[imei_index++] = value.slice(9, 19);
+
+                if (index + 1 == self.length) slice_pos = string.indexOf(value) + value.length;
             });
 
-            let regex = new RegExp(tach.join("|"), "gi");
-            let ghichu = string.replace(regex, '').trim();
-
-            if (ghichu != '' && !ghichu.includes("母卡")) boline[3] = ghichu;
+            let ghichu = string.slice(slice_pos).trim();
+            if (ghichu != '' && ghichu != "--紧急替换一下") boline[3] = ghichu;
 
             return boline;
         }
@@ -179,13 +181,23 @@
                 return;
             }
 
+            if (phones.includes(sdt)) {
+                note.text('Trùng số thuê bao!');
+                return;
+            }
+
+            phones.push(sdt);
+
             try {
                 kqua.text('Kiểm tra IMEI ...');
 
                 let lay_imei = await $.ajax({
                     type: 'POST',
-                    url: "{{ route('lay-imei.post') }}",
-                    data: {'sdt': '84'+sdt},
+                    url: "{{ route('lay-tttb-v4.post') }}",
+                    data: {
+                        'sdt': '84'+sdt,
+                        'string_data': ['so_msin', 'ma_tinh'],
+                    },
                 });
 
                 let tach = lay_imei.split("|");
@@ -195,8 +207,8 @@
                     return;
                 }
 
-                let imei = tach[0];
-                let matinh = tach[1];
+                let imei = tach[1];
+                let matinh = tach[2];
 
                 if (imei != old_esim) {
                     note.text('IMEI hiện tại không trùng khớp');

@@ -1,5 +1,5 @@
 <!-- Main sidebar -->
-<div class="sidebar sidebar-dark sidebar-main sidebar-expand-lg">
+<div class="sidebar sidebar-dark sidebar-main sidebar-expand-lg d-lg-none">
 
     <!-- Sidebar content -->
     <div class="sidebar-content">
@@ -41,7 +41,7 @@
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('home.index') }}" class="nav-link {{ request()->routeIs('home.index') ? 'active' : '' }}">
-                        <i class="fa-solid fa-repeat"></i>
+                        <i class="fa-solid fa-qrcode"></i>
                         <span>Đổi sim - Lấy QR</span>
                     </a>
                 </li>
@@ -62,7 +62,7 @@
 
                 <li class="nav-item">
                     <a href="{{ route('mobile-check.index') }}" class="nav-link {{ request()->routeIs('mobile-check.index') ? 'active' : '' }}">
-                        <i class="fa-solid fa-phone"></i>
+                        <i class="fa-solid fa-mobile-screen-button"></i>
                         <span>Kiểm tra thuê bao</span>
                     </a>
                 </li>
@@ -70,20 +70,20 @@
                 <li class="nav-item">
                     <a href="{{ route('mi-check.index') }}" class="nav-link {{ request()->routeIs('mi-check.index') ? 'active' : '' }}">
                         <i class="fa-solid fa-signal"></i>
-                        <span>Tra cứu MI</span>
+                        <span>Tra cứu dung lượng</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
                     <a href="{{ route('toggle-serivce.index') }}" class="nav-link {{ request()->routeIs('toggle-serivce.index') ? 'active' : '' }}">
-                        <i class="fa-solid fa-signal"></i>
-                        <span>Đóng mở dịch vụ</span>
+                        <i class="fa-solid fa-rss"></i>
+                        <span>Đóng mở dịch vụ GPRS</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
                     <a href="{{ route('toggle-ioc.index') }}" class="nav-link {{ request()->routeIs('toggle-ioc.index') ? 'active' : '' }}">
-                        <i class="fa-solid fa-signal"></i>
+                        <i class="fa-solid fa-phone-volume"></i>
                         <span>Cắt mở IOC</span>
                     </a>
                 </li>

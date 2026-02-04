@@ -367,7 +367,7 @@ class CcbsService
         }
     }
 
-    public function layIMEI($sdt) {
+    public function layTTThueBaoV4($sdt, $string_data) {
         $ch = curl_init();
 
         try {
@@ -392,12 +392,19 @@ class CcbsService
             ]);
 
             $response = curl_exec($ch);
-            $so_msin = $this->getStringData($response, "so_msin");
-            $ma_tinh = $this->getStringData($response, "ma_tinh");
+            $oked = $this->between($response, "var s1=\"", "\";");
 
-            if (isset($so_msin) && $so_msin != "") return $so_msin."|".$ma_tinh;
-            return "Vui lòng đăng nhập lại!";
+            if ($oked != 0) return "Vui lòng đăng nhập lại!";
+
+            $data = "OK";
+            $string_data = is_string($string_data) ? [$string_data] : $string_data;
+            foreach ($string_data as $key => $value) {
+                $data .= "|".$this->getStringData($response, $value);
+            }
+
+            return $data;
         } catch (Exception $e) {
+            throw $e;
             return "Vui lòng đăng nhập lại!";
         } finally {
             curl_close($ch);

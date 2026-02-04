@@ -106,7 +106,7 @@
     let total = 0;
 
     $(document).ready(function() {
-        $('.sidebar.sidebar-main').addClass("sidebar-main-resized");
+        // $('.sidebar.sidebar-main').addClass("sidebar-main-resized");
 
         $(document).on('click', '.btn-run', function() {
             let list = $('textarea[name="list"]').val();
@@ -151,8 +151,28 @@
             $('textarea[name="list"]').val("");
         });
 
+        function xulyChuoi(string) {
+            let tach = string.match(/\d{9,20}/g);
+            let boline = [];
+            let slice_pos = 0;
+
+            tach.forEach((value, index, self) => {
+                if (value.length == 9) boline[0] = value;
+                else if (value.length == 10) boline[1] = value;
+                else if (value.length == 20) boline[1] = value.slice(9, 19);
+
+                if (index + 1 == self.length) slice_pos = string.indexOf(value) + value.length;
+            });
+
+            let ghichu = string.slice(slice_pos).trim();
+            if (ghichu != '' && ghichu != "--紧急替换一下") boline[2] = ghichu;
+
+            return boline;
+        }
+
         async function chay() {
-            let boline = lines[index++].split(/[\t|]/);
+            // let boline = lines[index++].split(/[\t|]/);
+            let boline = xulyChuoi(lines[index++]);
             let row = $('<tr></tr>');
 
             row.append($('<td class="text-center">' + (index) + '</td>'));

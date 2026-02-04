@@ -95,7 +95,7 @@
     let total = 0;
 
     $(document).ready(function() {
-        $('.sidebar.sidebar-main').addClass("sidebar-main-resized");
+        // $('.sidebar.sidebar-main').addClass("sidebar-main-resized");
 
         $(document).on('click', '.btn-run', function() {
             let list = $('textarea[name="list"]').val();
@@ -113,8 +113,9 @@
             lines = list.split("\n").filter((line) => {
                 return line != "";
             }).map((line) => {
-                line = line.trim();
-                return line.length < 11 ? "84"+line : line;
+                // line = line.trim();
+                // return line.length < 11 ? "84"+line : line;
+                return line.trim();
             }).filter((line, index, self) => {
                 return self.indexOf(line) === index;
             });
@@ -156,7 +157,7 @@
             let row = $('<tr></tr>');
 
             row.append($('<td class="text-center">' + (index) + '</td>'));
-            row.append($('<td>' + (line ?? '') + '</td>'));
+            row.append($('<td></td>'));
             row.append($('<td></td>'));
             row.append($('<td></td>'));
             row.append($('<td class="text-center"></td>'));
@@ -165,7 +166,17 @@
 
             $('#progress_list').append(row);
 
-            await kiemTraTB(row, line) && await layDVu(row, line);
+            if ([9,11].includes(line.length)) {
+                let sdt = line.length == 11 ? line.slice(-9) : line;
+                row.children().eq(1).text(sdt);
+                await kiemTraTB(row, sdt) && await layDVu(row, line);
+            } else if ([10,20].includes(line.length)) {
+                let imei = line.length == 20 ? line.slice(9,19) : line;
+                row.children().eq(2).text(imei);
+                await kiemTraIMEI(row, imei) && await layDVu(row, line);
+            } else {
+                row.children().eq(1).text("Dữ liệu không hợp lệ!");
+            }
 
             row.children().eq(6).html(`
                 <span type="button" class="badge badge-danger btn-remove-row">
@@ -177,6 +188,71 @@
             else stop();
         }
 
+        async function kiemTraIMEI(row, imei) {
+            let sdt = row.children().eq(1);
+            let tttb = row.children().eq(3);
+            let note = row.children().eq(5)
+
+            try {
+                sdt.text('Đang lấy số TB ...');
+
+                let lay_tb = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('check-msin.post') }}",
+                    data: {'msin': imei},
+                });
+
+                let tach = lay_tb.split("|");
+
+                if (tach.length < 2) {
+                    sdt.text('');
+                    note.text(tach[0]);
+                    return false;
+                }
+
+                mobile = tach[1];
+
+                sdt.text(mobile.slice(-9));
+
+                tttb.text('Đang lấy thông tin ...');
+
+                let lay_matinh = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('lay-tttb-v4.post') }}",
+                    data: {
+                        'sdt': mobile,
+                        'string_data': 'ma_tinh',
+                    },
+                });
+
+                tach = lay_matinh.split("|");
+
+                if (tach.length < 2) {
+                    tttb.text("Vui lòng đăng nhập lại!");
+                    return false;
+                }
+
+                let matinh = tach[1];
+
+                let lay_tttb = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('lay-tttb.post') }}",
+                    data: {
+                        'sdt': mobile,
+                        'matinh': matinh,
+                    },
+                });
+
+                tttb.text(lay_tttb);
+
+                return lay_tttb != 'Vui lòng đăng nhập lại!';
+
+            } catch (error) {
+                note.text('Lỗi ngoại biên!');
+                return false;
+            }
+        }
+
         async function kiemTraTB(row, sdt) {
             let imei = row.children().eq(2);
             let tttb = row.children().eq(3);
@@ -186,16 +262,23 @@
 
                 let lay_imei = await $.ajax({
                     type: 'POST',
-                    url: "{{ route('lay-imei.post') }}",
-                    data: {'sdt': sdt},
+                    url: "{{ route('lay-tttb-v4.post') }}",
+                    data: {
+                        'sdt': '84'+sdt,
+                        'string_data': ['so_msin', 'ma_tinh'],
+                    },
                 });
 
                 let tach = lay_imei.split("|");
-                imei.text(tach[0]);
+                
+                if (tach.length < 2) {
+                    imei.text("Vui lòng đăng nhập lại!");
+                    return false;
+                }
 
-                if (tach.length < 2) return false;
+                imei.text(tach[1]);
 
-                let matinh = tach[1];
+                let matinh = tach[2];
 
                 tttb.text('Đang lấy thông tin ...');
 
@@ -203,7 +286,7 @@
                     type: 'POST',
                     url: "{{ route('lay-tttb.post') }}",
                     data: {
-                        'sdt': sdt,
+                        'sdt': '84'+sdt,
                         'matinh': matinh,
                     },
                 });

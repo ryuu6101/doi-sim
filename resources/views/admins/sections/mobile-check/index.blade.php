@@ -117,7 +117,7 @@
             $('#progress_list').append(row);
 
             let matinh = await layIMEI(row, line);
-            await layTTKhTb(row, line, matinh ?? '');
+            matinh && await layTTKhTb(row, line, matinh);
 
             if (index < total) timeout = setTimeout(chay, delay * 1000);
             else stop();
@@ -130,17 +130,26 @@
             try {
                 let result = await $.ajax({
                     type: 'POST',
-                    url: "{{ route('lay-imei.post') }}",
-                    data: {'sdt': sdt},
+                    url: "{{ route('lay-tttb-v4.post') }}",
+                    data: {
+                        'sdt': sdt,
+                        'string_data': ['so_msin', 'ma_tinh'],
+                    },
                 });
+
+                if (!result.includes("OK|")) {
+                    cell.text("Vui lòng đăng nhập lại!");
+                    return false;
+                }
 
                 let tach = result.split("|");
 
-                cell.text(tach[0]);
+                cell.text(tach[1]);
 
-                return tach[1] ?? '';
+                return tach[2];
             } catch (error) {
                 cell.text('Lỗi ngoại biên!');
+                return false;
             }
         }
 

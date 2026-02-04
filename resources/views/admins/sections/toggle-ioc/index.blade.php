@@ -101,7 +101,7 @@
     let total = 0;
 
     $(document).ready(function() {
-        $('.sidebar.sidebar-main').addClass("sidebar-main-resized");
+        // $('.sidebar.sidebar-main').addClass("sidebar-main-resized");
 
         $(document).on('click', '.btn-run', function() {
             let list = $('textarea[name="list"]').val();
@@ -193,16 +193,23 @@
 
                 let lay_imei = await $.ajax({
                     type: 'POST',
-                    url: "{{ route('lay-imei.post') }}",
-                    data: {'sdt': sdt},
+                    url: "{{ route('lay-tttb-v4.post') }}",
+                    data: {
+                        'sdt': sdt,
+                        'string_data': ['so_msin', 'ma_tinh'],
+                    },
                 });
 
                 let tach = lay_imei.split("|");
-                imei.text(tach[0]);
+                
+                if (tach.length < 2) {
+                    imei.text('Vui lòng đăng nhập lại!');
+                    return false;
+                }
 
-                if (tach.length < 2) return false;
+                imei.text(tach[1]);
 
-                let matinh = tach[1];
+                let matinh = tach[2];
 
                 tttb.text('Đang lấy thông tin ...');
 

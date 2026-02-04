@@ -24,7 +24,7 @@ class SectionController extends Controller
         View::share('password', $info[1] ?? '');
         View::share('cookies', $info[2] ?? '');
         View::share('cookies_ccos', $cookies_ccos);
-        View::share('delay', 2);
+        View::share('delay', 5);
     }
 
     public function home() {

@@ -56,33 +56,17 @@ class EsimController extends Controller
         return $this->ccbsService->taiAnh($ma, $bar, $sdt);
     }
 
-    public function pdfTest() {
-        // Use Imagick to convert PDF to image
-        $imagick = new \Imagick();
-        $imagick->setResolution(150, 150);
-        $imagick->readImage('test.pdf[0]');
-        $imagick->scaleImage(993, 1558);
-        $imagick->setImageFormat('jpeg');
-
-        // Crop the QR code region (737, 261, 110x110)
-        $imagick->cropImage(110, 110, 737, 261);
-
-        // Save the cropped image
-        $outputPath = $this->qrCodePath . '/testqr.jpeg';
-        $imagick->writeImage($outputPath);
-        $imagick->destroy();
-    }
-
     public function checkMSIN(Request $request) {
         $msin = $request->input('msin');
 
         return $this->ccbsService->checkMSIN($msin);
     }
 
-    public function layIMEI(Request $request) {
+    public function layTTTBaoV4(Request $request) {
         $sdt = $request->input('sdt');
+        $string_data = $request->input('string_data');
 
-        return $this->ccbsService->layIMEI($sdt);
+        return $this->ccbsService->layTTThueBaoV4($sdt, $string_data);
     }
 
     public function layTTTBao(Request $request) {

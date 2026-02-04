@@ -26,7 +26,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/lay-ma-sim', [EsimController::class, 'layMaSim'])->name('lay-ma-sim.post');
     Route::post('/tai-anh', [EsimController::class, 'taiAnh'])->name('tai-anh.post');
     Route::post('/check-msin', [EsimController::class, 'checkMSIN'])->name('check-msin.post');
-    Route::post('/lay-imei', [EsimController::class, 'layIMEI'])->name('lay-imei.post');
+    Route::post('/lay-tttb-v4', [EsimController::class, 'layTTTBaoV4'])->name('lay-tttb-v4.post');
     Route::post('/lay-tttb', [EsimController::class, 'layTTTBao'])->name('lay-tttb.post');
     Route::post('/save-cookie', [EsimController::class, 'saveCookie'])->name('save-cookie.post');
     Route::post('/tra-cuu-mi', [EsimController::class, 'traCuuMI'])->name('tra-cuu-mi.post');
