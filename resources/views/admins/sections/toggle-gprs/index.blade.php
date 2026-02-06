@@ -35,7 +35,7 @@
             <div class="card-body">
                 <div class="row mb-2">
                     <div class="col">
-                        <strong>Cắt mở IOC</strong>
+                        <strong>Đóng mở dịch vụ</strong>
                     </div>
                 </div>
                 <div class="row mb-2">
@@ -64,14 +64,8 @@
                         <th class="text-center">Thông tin TB</th>
                         <th class="text-center">
                             <div class="custom-control custom-control-right custom-checkbox custom-control-inline">
-                                <input type="checkbox" class="custom-control-input check-all" data-dvu="goidi" id="check_all_goidi">
-                                <label class="custom-control-label" for="check_all_goidi">Gọi đi</label>
-                            </div>
-                        </th>
-                        <th class="text-center">
-                            <div class="custom-control custom-control-right custom-checkbox custom-control-inline">
-                                <input type="checkbox" class="custom-control-input check-all" data-dvu="goiden" id="check_all_goiden">
-                                <label class="custom-control-label" for="check_all_goiden">Gọi đến</label>
+                                <input type="checkbox" class="custom-control-input check-all" data-dvu="GPRS" id="check_all_GPRS">
+                                <label class="custom-control-label" for="check_all_GPRS">GPRS</label>
                             </div>
                         </th>
                         <th class="text-center">Trạng thái</th>
@@ -165,7 +159,6 @@
             row.append($('<td></td>'));
             row.append($('<td></td>'));
             row.append($('<td class="text-center"></td>'));
-            row.append($('<td class="text-center"></td>'));
             row.append($('<td></td>'));
             row.append($('<td class="text-center"></td>'));
 
@@ -179,12 +172,12 @@
             if ([9,11].includes(line.length)) {
                 let sdt = line.length == 11 ? line.slice(-9) : line;
                 row.children().eq(1).text(sdt);
-                await kiemTraTB(row, sdt) && await layIOC(row, sdt);
+                await kiemTraTB(row, sdt) && await layDVu(row, sdt);
             } else if ([10,20].includes(line.length)) {
                 let imei = line.length == 20 ? line.slice(9,19) : line;
                 row.children().eq(2).text(imei);
                 let sdt = await kiemTraIMEI(row, imei);
-                sdt && await layIOC(row, sdt);
+                sdt && await layDVu(row, sdt);
             } else {
                 row.children().eq(1).text("Dữ liệu không hợp lệ!");
             }
@@ -202,7 +195,7 @@
         async function kiemTraIMEI(row, imei) {
             let sdt = row.children().eq(1);
             let tttb = row.children().eq(3);
-            let note = row.children().eq(6)
+            let note = row.children().eq(5)
 
             try {
                 sdt.text('Đang lấy số TB ...');
@@ -285,7 +278,7 @@
                 let tach = lay_imei.split("|");
                 
                 if (tach.length < 2) {
-                    imei.text('Vui lòng đăng nhập lại!');
+                    imei.text("Vui lòng đăng nhập lại!");
                     return false;
                 }
 
@@ -313,46 +306,50 @@
             }
         }
 
-        async function layIOC(row, sdt) {
-            let goidi = row.children().eq(4);
-            let goiden = row.children().eq(5);
-            let note = row.children().eq(6);
+        async function layDVu(row, sdt) {
+            let gprs = row.children().eq(4);
+            let note = row.children().eq(5);
+
+            if (phones.includes(sdt)) {
+                note.text('Trùng số thuê bao!');
+                return;
+            }
+
+            phones.push(sdt);
 
             try {
-                goidi.html('<span class="spinner spinner-border spinner-border-sm text-muted"></span>');
+                gprs.html('<span class="spinner spinner-border spinner-border-sm text-muted"></span>');
 
-                let lay_ioc = await $.ajax({
+                let lay_dvu = await $.ajax({
                     type: 'POST',
-                    url: "{{ route('lay-ioc.post') }}",
-                    data: {'sdt': '84'+sdt},
+                    url: "{{ route('lay-dvu.post') }}",
+                    data: {
+                        'sdt': '84'+sdt,
+                        'dich_vu': 'GPRS',
+                    },
                 });
 
-                let tach = lay_ioc.split("|");
+                let tach = lay_dvu.split("|");
                 if (tach.length < 2) {
                     note.tach[0];
                     return;
                 }
 
-                let checkboxs = [];
-                let iocs = ['goidi', 'goiden'];
+                let custom = $('<div class="custom-control custom-checkbox custom-control-inline"></div>');
+                let checkbox = $(`<input type="checkbox" class="custom-control-input" data-dvu="GPRS" data-sdt="${sdt}" id="GPRS_${sdt}">`);
+                let label = $(`<label class="custom-control-label pl-0" for="GPRS_${sdt}"></label>`);
 
-                tach.forEach((value, index) => {
-                    let custom = $('<div class="custom-control custom-checkbox custom-control-inline"></div>');
-                    let checkbox = $(`<input type="checkbox" class="custom-control-input" 
-                                        data-dvu="${iocs[index]}" data-sdt="${sdt}" id="${iocs[index]}_${sdt}">`);
-                    let label = $(`<label class="custom-control-label pl-0" for="${iocs[index]}_${sdt}"></label>`);
+                if (tach[1] < 0) {
+                    checkbox.prop('disabled', true);
+                } else {
+                    checkbox.prop('checked', !!(tach[1] * 1));
+                    checkbox.attr('data-checked', tach[1]);
+                }
 
-                    if (value < 0) checkbox.prop('disabled', true);
-                    else checkbox.prop('checked', !!(value * 1));
+                custom.append(checkbox);
+                custom.append(label);
 
-                    custom.append(checkbox);
-                    custom.append(label);
-
-                    checkboxs.push(custom);
-                });
-
-                goidi.html(checkboxs[0]);
-                goiden.html(checkboxs[1]);
+                gprs.html(custom);
             } catch (error) {
                 note.text('Lỗi ngoại biên!');
             }
@@ -404,33 +401,41 @@
 
         async function thucHien() {
             let row = dvu_rows.eq(dvu_index++);
-            let sdt = row.children().eq(1).text();
-            let goidi = +row.find('input[data-dvu="goidi"]').is(':checked');
-            let goiden = +row.find('input[data-dvu="goiden"]').is(':checked');
+            let note = row.children().eq(5);
+            let checkbox = row.find('input[data-dvu]');
+            let sdt = checkbox.attr('data-sdt');
+            let dvu = checkbox.attr('data-dvu');
+            let valid = checkbox.length > 0 && !checkbox.is(':disabled') && +checkbox.is(':checked') != checkbox.attr('data-checked');
 
-            await catmoIOC(row, sdt, goidi, goiden);
+            if (checkbox.length <= 0 || checkbox.is(':disabled')) note.text('Không có dịch vụ');
+            if (+checkbox.is(':checked') == checkbox.attr('data-checked')) note.text('Không thay đổi');
+            if (valid) await dongMoDVu(row, sdt, dvu);
 
             if (dvu_index >= dvu_total) stop();
+            else if (!valid) thucHien();
             else timeout = setTimeout(thucHien, delay * 1000);
         }
 
-        async function catmoIOC(row, sdt, goidi, goiden) {
-            let note = row.children().eq(6);
+        async function dongMoDVu(row, sdt, dvu) {
+            let note = row.children().eq(5);
+            let checkbox = row.find(`input[data-dvu="${dvu}"]`);
+            let checked = checkbox.is(':checked');
 
             note.text('Đang thực hiện ...');
 
             try {
-                let catmo_ioc = await $.ajax({
+                let dm_dvu = await $.ajax({
                     type: 'POST',
-                    url: "{{ route('catmo-ioc.post') }}",
+                    url: "{{ route('dm-dvu.post') }}",
                     data: {
                         'sdt': '84'+sdt,
-                        'goidi': goidi,
-                        'goiden': goiden,
+                        'dvu': dvu,
                     },
                 });
 
-                note.text(catmo_ioc);
+                if (dm_dvu == 'THÀNH CÔNG') checkbox.attr('data-checked', +checked);
+
+                note.text(dm_dvu);
             } catch (error) {
                 note.text('Đã xảy ra lỗi!');
             }

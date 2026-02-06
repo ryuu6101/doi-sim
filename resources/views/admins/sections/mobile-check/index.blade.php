@@ -116,6 +116,11 @@
 
             $('#progress_list').append(row);
 
+            $('#tb_footer')[0].scrollIntoView({
+                behavior: 'smooth',
+                block: 'end'
+            });
+
             let matinh = await layIMEI(row, line);
             matinh && await layTTKhTb(row, line, matinh);
 

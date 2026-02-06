@@ -47,11 +47,15 @@ class SectionController extends Controller
         return view('admins.sections.swap-imei.index');
     }
 
-    public function toggleServices() {
-        return view('admins.sections.toggle-services.index');
+    public function toggleGPRS() {
+        return view('admins.sections.toggle-gprs.index');
     }
 
     public function toggleIOC() {
         return view('admins.sections.toggle-ioc.index');
+    }
+
+    public function toggleSmtSmo() {
+        return view('admins.sections.toggle-smt-smo.index');
     }
 }

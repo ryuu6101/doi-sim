@@ -116,6 +116,11 @@
 
             $('#progress_list').append(row);
 
+            $('#tb_footer')[0].scrollIntoView({
+                behavior: 'smooth',
+                block: 'end'
+            });
+
             await checkmsin(row, line);
 
             if (index < total) timeout = setTimeout(chay, delay * 1000);

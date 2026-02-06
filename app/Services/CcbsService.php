@@ -496,13 +496,14 @@ class CcbsService
             if ($html == "") return "Vui lòng đăng nhập lại!";
 
             $dom = new DOMDocument();
-            @$dom->loadHTML(str_replace("\\","", $html));
+            @$dom->loadHTML(str_replace(["\\", "&nbsp;"], ["", " "], $html));
             $xpath = new DOMXPath($dom);
 
             $dich_vu = is_array($dich_vu) ? $dich_vu : [$dich_vu];
-            $values = "checked";
+            $values = "OK";
 
             foreach ($dich_vu as $key => $value) {
+                $value = str_pad($value, 4);
                 $checkbox = $xpath->query("//input[@type='checkbox' and @value='{$value}']");
                 $checked = $checkbox->item(0)->hasAttribute('checked');
                 $values .= "|".(int)$checked;
@@ -541,10 +542,14 @@ class CcbsService
             ]);
 
             $response = curl_exec($ch);
+            // dd($response, $sdt, $dvu);
             $kqua = $this->between($response, "s0=\"", "\";");
 
             if ($kqua == 1) return "THÀNH CÔNG";
-            return "THẤT BẠI";
+
+            $tach = explode("|", $kqua);
+
+            return $tach[2] ?? "THẤT BẠI";
         } catch (Exception $e) {
             return "Vui lòng đăng nhập lại!";
         } finally {

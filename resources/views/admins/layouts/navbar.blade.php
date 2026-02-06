@@ -5,17 +5,20 @@
             <i class="icon-transmission"></i>
         </button>
     </div>
-
-    <div class="d-flex flex-1 pl-3">
-        <div class="navbar-brand wmin-0 mr-1">
-            <a href="{{ route('home.index') }}" class="d-inline-block">
-                <img src="{{ asset('global_assets/images/logo_light.png') }}" class="d-none d-sm-block" alt="">
-                <img src="{{ asset('global_assets/images/logo_icon_light.png') }}" class="d-sm-none" alt="">
-            </a>
-        </div>
+    <div class="d-lg-flex flex-1 d-none">
+        <a href="#" class="navbar-nav-link sidebar-control sidebar-main-toggle d-none d-lg-block">
+            <i class="fa-solid fa-bars"></i>
+        </a>
     </div>
 
-    <div class="d-none d-lg-flex w-100 w-xl-auto overflow-auto overflow-xl-visible scrollbar-hidden border-top border-top-xl-0 order-1 order-xl-0">
+    <div class="navbar-brand text-center text-lg-left d-lg-none">
+        <a href="{{ route('home.index') }}" class="d-inline-block">
+            <img src="{{ asset('global_assets/images/logo_light.png') }}" class="d-none d-sm-block" alt="">
+            <img src="{{ asset('global_assets/images/logo_icon_light.png') }}" class="d-sm-none" alt="">
+        </a>
+    </div>
+
+    <div class="navbar-collapse collapse">
         <ul class="navbar-nav navbar-nav-underline flex-row text-nowrap mx-auto">
             <li class="nav-item">
                 <a href="{{ route('home.index') }}" class="navbar-nav-link">
@@ -31,7 +34,7 @@
                 </a>
             </li>
 
-            <li class="nav-item dropdown nav-item-dropdown-xl">
+            {{-- <li class="nav-item dropdown nav-item-dropdown-xl">
                 <a href="#" class="navbar-nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                     <i class="fa-solid fa-magnifying-glass mr-2"></i>
                     Tra cứu
@@ -51,29 +54,36 @@
                         <span>Tra cứu dung lượng</span>
                     </a>
                 </div>
+            </li> --}}
+
+            <li class="nav-item">
+                <a href="{{ route('toggle-gprs.index') }}" class="navbar-nav-link">
+                    <i class="fa-solid fa-rss"></i>
+                        <span>Đóng mở dịch vụ GPRS</span>
+                </a>
             </li>
 
-            <li class="nav-item dropdown nav-item-dropdown-xl">
+            {{-- <li class="nav-item dropdown nav-item-dropdown-xl">
                 <a href="#" class="navbar-nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                     <i class="fa-solid fa-toggle-on mr-2"></i>
-                    Đóng mở dịch vụ
+                    Đóng mở dịch vụ khác
                 </a>
             
                 <div class="dropdown-menu dropdown-scrollable-xl">
-                    <a href="{{ route('toggle-serivce.index') }}" class="dropdown-item rounded">
-                        <i class="fa-solid fa-rss"></i>
-                        <span>Đóng mở dịch vụ GPRS</span>
+                    <a href="{{ route('toggle-smt-smo.index') }}" class="dropdown-item rounded">
+                        <i class="fa-solid fa-square-share-nodes"></i>
+                        <span>Đóng mở SMT/SMO</span>
                     </a>
                     <a href="{{ route('toggle-ioc.index') }}" class="dropdown-item rounded">
                         <i class="fa-solid fa-phone-volume"></i>
                         <span>Cắt mở IOC</span>
                     </a>
                 </div>
-            </li>
+            </li> --}}
         </ul>
     </div>
 
-    <div class="d-flex flex-xl-1 justify-content-xl-end order-0 order-xl-1 pr-3">
+    <div class="d-flex flex-1 justify-content-end pr-3">
         <ul class="navbar-nav flex-row order-1 order-lg-2 flex-1 flex-lg-0 justify-content-end align-items-center">
             <form id="logoutForm" action="{{ route('logout.post') }}" method="POST" class="d-none">
                 @method('POST')

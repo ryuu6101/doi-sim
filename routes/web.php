@@ -18,8 +18,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/mobile-check', [SectionController::class, 'mobileCheck'])->name('mobile-check.index');
     Route::get('/ccos/tra-cuu-mi', [SectionController::class, 'miCheck'])->name('mi-check.index');
     Route::get('/swap-imei', [SectionController::class, 'swapIMEI'])->name('swap-imei.index');
-    Route::get('/toggle-serivces', [SectionController::class, 'toggleServices'])->name('toggle-serivce.index');
+    Route::get('/toggle-gprs', [SectionController::class, 'toggleGPRS'])->name('toggle-gprs.index');
     Route::get('/toggle-ioc', [SectionController::class, 'toggleIOC'])->name('toggle-ioc.index');
+    Route::get('/toggle-smt-smo', [SectionController::class, 'toggleSmtSmo'])->name('toggle-smt-smo.index');
     
     Route::post('/ccbs-login', [EsimController::class, 'ccbsLogin'])->name('ccbs-login.post');
     Route::post('/doi-sim', [EsimController::class, 'doiSim'])->name('doi-sim.post');

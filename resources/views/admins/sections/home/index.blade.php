@@ -185,6 +185,11 @@
 
             $('#progress_list').append(row);
 
+            $('#tb_footer')[0].scrollIntoView({
+                behavior: 'smooth',
+                block: 'end'
+            });
+
             if (doi_sim) await doisim(row, boline) && lay_qr && await layqr(row, boline);
             else if (lay_qr) await layqr(row, boline);
 

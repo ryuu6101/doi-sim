@@ -64,8 +64,14 @@
                         <th class="text-center">Thông tin TB</th>
                         <th class="text-center">
                             <div class="custom-control custom-control-right custom-checkbox custom-control-inline">
-                                <input type="checkbox" class="custom-control-input check-all" data-dvu="GPRS" id="check_all_GPRS">
-                                <label class="custom-control-label" for="check_all_GPRS">GPRS</label>
+                                <input type="checkbox" class="custom-control-input check-all" data-dvu="SMT" id="check_all_SMT">
+                                <label class="custom-control-label" for="check_all_SMT">SMT</label>
+                            </div>
+                        </th>
+                        <th class="text-center">
+                            <div class="custom-control custom-control-right custom-checkbox custom-control-inline">
+                                <input type="checkbox" class="custom-control-input check-all" data-dvu="SMO" id="check_all_SMO">
+                                <label class="custom-control-label" for="check_all_SMO">SMO</label>
                             </div>
                         </th>
                         <th class="text-center">Trạng thái</th>
@@ -93,6 +99,7 @@
     let lines = [];
     let index = 0;
     let total = 0;
+    let phones = [];
 
     $(document).ready(function() {
         // $('.sidebar.sidebar-main').addClass("sidebar-main-resized");
@@ -113,15 +120,12 @@
             lines = list.split("\n").filter((line) => {
                 return line != "";
             }).map((line) => {
-                // line = line.trim();
-                // return line.length < 11 ? "84"+line : line;
                 return line.trim();
-            }).filter((line, index, self) => {
-                return self.indexOf(line) === index;
-            });
+            })
 
             index = 0;
             total = lines.length;
+            phones = [];
 
             $('#progress_list').html('');
             $('#tb_footer').removeClass('d-none');
@@ -161,24 +165,31 @@
             row.append($('<td></td>'));
             row.append($('<td></td>'));
             row.append($('<td class="text-center"></td>'));
+            row.append($('<td class="text-center"></td>'));
             row.append($('<td></td>'));
             row.append($('<td class="text-center"></td>'));
 
             $('#progress_list').append(row);
 
+            $('#tb_footer')[0].scrollIntoView({
+                behavior: 'smooth',
+                block: 'end'
+            });
+
             if ([9,11].includes(line.length)) {
                 let sdt = line.length == 11 ? line.slice(-9) : line;
                 row.children().eq(1).text(sdt);
-                await kiemTraTB(row, sdt) && await layDVu(row, line);
+                await kiemTraTB(row, sdt) && await layDVu(row, sdt);
             } else if ([10,20].includes(line.length)) {
                 let imei = line.length == 20 ? line.slice(9,19) : line;
                 row.children().eq(2).text(imei);
-                await kiemTraIMEI(row, imei) && await layDVu(row, line);
+                let sdt = await kiemTraIMEI(row, imei);
+                sdt && await layDVu(row, sdt);
             } else {
                 row.children().eq(1).text("Dữ liệu không hợp lệ!");
             }
 
-            row.children().eq(6).html(`
+            row.children(':last-child').html(`
                 <span type="button" class="badge badge-danger btn-remove-row">
                     <i class="fa-solid fa-trash-can"></i>
                 </span>
@@ -210,9 +221,9 @@
                     return false;
                 }
 
-                mobile = tach[1];
+                mobile = tach[1].slice(-9);
 
-                sdt.text(mobile.slice(-9));
+                sdt.text(mobile);
 
                 tttb.text('Đang lấy thông tin ...');
 
@@ -220,7 +231,7 @@
                     type: 'POST',
                     url: "{{ route('lay-tttb-v4.post') }}",
                     data: {
-                        'sdt': mobile,
+                        'sdt': '84'+mobile,
                         'string_data': 'ma_tinh',
                     },
                 });
@@ -238,14 +249,16 @@
                     type: 'POST',
                     url: "{{ route('lay-tttb.post') }}",
                     data: {
-                        'sdt': mobile,
+                        'sdt': '84'+mobile,
                         'matinh': matinh,
                     },
                 });
 
                 tttb.text(lay_tttb);
 
-                return lay_tttb != 'Vui lòng đăng nhập lại!';
+                if (lay_tttb == 'Vui lòng đăng nhập lại!') return false;
+
+                return mobile;
 
             } catch (error) {
                 note.text('Lỗi ngoại biên!');
@@ -301,18 +314,29 @@
         }
 
         async function layDVu(row, sdt) {
-            let gprs = row.children().eq(4);
-            let note = row.children().eq(5);
+            let smt = row.children().eq(4);
+            let smo = row.children().eq(5);
+            let note = row.children().eq(6);
+
+            if (phones.includes(sdt)) {
+                note.text('Trùng số thuê bao!');
+                return;
+            }
+
+            phones.push(sdt);
 
             try {
-                gprs.html('<span class="spinner spinner-border spinner-border-sm text-muted"></span>');
+                smt.html('<span class="spinner spinner-border spinner-border-sm text-muted"></span>');
+                // smo.html('<span class="spinner spinner-border spinner-border-sm text-muted"></span>');
+
+                let dich_vu = ['SMT', 'SMO'];
 
                 let lay_dvu = await $.ajax({
                     type: 'POST',
                     url: "{{ route('lay-dvu.post') }}",
                     data: {
-                        'sdt': sdt,
-                        'dich_vu': 'GPRS',
+                        'sdt': '84'+sdt,
+                        'dich_vu': dich_vu,
                     },
                 });
 
@@ -322,21 +346,26 @@
                     return;
                 }
 
-                let custom = $('<div class="custom-control custom-checkbox custom-control-inline"></div>');
-                let checkbox = $(`<input type="checkbox" class="custom-control-input" data-dvu="GPRS" data-sdt="${sdt}" id="GPRS_${sdt}">`);
-                let label = $(`<label class="custom-control-label pl-0" for="GPRS_${sdt}"></label>`);
+                for (let i = 0; i < dich_vu.length; i++) {
+                    let dvu = dich_vu[i];
+                    let checked = tach[i + 1];
 
-                if (tach[1] < 0) {
-                    checkbox.prop('disabled', true);
-                } else {
-                    checkbox.prop('checked', !!(tach[1] * 1));
-                    checkbox.attr('data-checked', tach[1]);
+                    let custom = $('<div class="custom-control custom-checkbox custom-control-inline"></div>');
+                    let checkbox = $(`<input type="checkbox" class="custom-control-input" data-dvu="${dvu}" data-sdt="${sdt}" id="${dvu}_${sdt}">`);
+                    let label = $(`<label class="custom-control-label pl-0" for="${dvu}_${sdt}"></label>`);
+    
+                    if (checked < 0) {
+                        checkbox.prop('disabled', true);
+                    } else {
+                        checkbox.prop('checked', !!(checked * 1));
+                        checkbox.attr('data-checked', checked);
+                    }
+    
+                    custom.append(checkbox);
+                    custom.append(label);
+
+                    row.children().eq(i + 4).html(custom);
                 }
-
-                custom.append(checkbox);
-                custom.append(label);
-
-                gprs.html(custom);
             } catch (error) {
                 note.text('Lỗi ngoại biên!');
             }
@@ -388,23 +417,26 @@
 
         async function thucHien() {
             let row = dvu_rows.eq(dvu_index++);
-            let note = row.children().eq(5);
-            let checkbox = row.find('input[data-dvu]');
-            let sdt = checkbox.attr('data-sdt');
-            let dvu = checkbox.attr('data-dvu');
-            let valid = checkbox.length > 0 && !checkbox.is(':disabled') && +checkbox.is(':checked') != checkbox.attr('data-checked');
+            let note = row.children().eq(6);
+            let checkboxes = row.find('input[data-dvu]');
 
-            if (checkbox.length <= 0 || checkbox.is(':disabled')) note.text('Không có dịch vụ');
-            if (+checkbox.is(':checked') == checkbox.attr('data-checked')) note.text('Không thay đổi');
-            if (valid) await dongMoDVu(row, sdt, dvu);
+            checkboxes.each(async function (index) {
+                let checkbox = $(this);
+                let sdt = checkbox.attr('data-sdt');
+                let dvu = checkbox.attr('data-dvu');
+                let valid = checkbox.length > 0 && !checkbox.is(':disabled') && +checkbox.is(':checked') != checkbox.attr('data-checked');
+    
+                // if (checkbox.length <= 0 || checkbox.is(':disabled')) note.text('Không có dịch vụ');
+                // if (+checkbox.is(':checked') == checkbox.attr('data-checked')) note.text('Không thay đổi');
+                if (valid) await dongMoDVu(row, sdt, dvu);
+            });
 
             if (dvu_index >= dvu_total) stop();
-            else if (!valid) thucHien();
             else timeout = setTimeout(thucHien, delay * 1000);
         }
 
         async function dongMoDVu(row, sdt, dvu) {
-            let note = row.children().eq(5);
+            let note = row.children().eq(6);
             let checkbox = row.find(`input[data-dvu="${dvu}"]`);
             let checked = checkbox.is(':checked');
 
@@ -415,7 +447,7 @@
                     type: 'POST',
                     url: "{{ route('dm-dvu.post') }}",
                     data: {
-                        'sdt': sdt,
+                        'sdt': '84'+sdt,
                         'dvu': dvu,
                     },
                 });

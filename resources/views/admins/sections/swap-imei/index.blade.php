@@ -131,6 +131,11 @@
 
             $('#progress_list').append(row);
 
+            $('#tb_footer')[0].scrollIntoView({
+                behavior: 'smooth',
+                block: 'end'
+            });
+
             await doisim(row, boline);
 
             if (index < total) timeout = setTimeout(chay, delay * 1000);
@@ -152,7 +157,8 @@
             });
 
             let ghichu = string.slice(slice_pos).trim();
-            if (ghichu != '' && ghichu != "--紧急替换一下") boline[3] = ghichu;
+            // if (ghichu != '' && ghichu != "--紧急替换一下") boline[3] = ghichu;
+            if (ghichu != '' && !string.includes('母卡')) boline[3] = ghichu;
 
             return boline;
         }
