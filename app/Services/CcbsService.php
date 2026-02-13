@@ -439,8 +439,12 @@ class CcbsService
             $ten_tb = $this->getStringData($response, "ten_tb");
             // dd($response, $ten_tb);
 
-            if (isset($ten_tb) && $ten_tb != "") return html_entity_decode($ten_tb);
-            return "Vui lòng đăng nhập lại!";
+            // if (isset($ten_tb) && $ten_tb != "") return html_entity_decode($ten_tb);
+            // return "Vui lòng đăng nhập lại!";
+
+            if (!isset($ten_tb)) return "Vui lòng đăng nhập lại!";
+            if ($ten_tb == "") return "Không tìm thấy thuê bao!";
+            return html_entity_decode($ten_tb);
         } catch (Exception $e) {
             return "Vui lòng đăng nhập lại!";
         } finally {
@@ -633,23 +637,85 @@ class CcbsService
         }
     }
 
+    public function layBcEsim($date) {
+        $ch = curl_init();
+
+        try {
+            $date = str_replace(['/','-'], '%2F', $date);
+            $timestamp = now()->getPreciseTimestamp(3);
+
+            $postData = "callCount=1".PHP_EOL;
+            $postData .= "c0-scriptName=DataRemoting".PHP_EOL;
+            $postData .= "c0-methodName=getDoc".PHP_EOL;
+            $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinanv.docBctkSIM_(%22".$date."%22%2C%22admin_dng%22%2C%22all%22)".PHP_EOL;
+            $postData .= "c0-param1=boolean:false".PHP_EOL;
+            $postData .= "xml=true".PHP_EOL;
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
+                CURLOPT_HTTPHEADER => $this->httpHeader
+            ]);
+
+            $response = curl_exec($ch);
+            $html = $this->between($response, 'var s0="', '";');
+            // dd($html);
+
+            if (!isset($html) || $html == '') return 'Vui lòng đăng nhập lại!';
+
+            $encodedHtml = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8"); 
+
+            $dom = new DOMDocument();
+            @$dom->loadHTML($encodedHtml);
+
+            $xpath = new DOMXPath($dom);
+            $rows = $xpath->query("//*[contains(@class, 'row0')]");
+
+            $datas = [];
+            foreach ($rows as $row) {
+                $rowData = [];
+                $cells = $row->getElementsByTagName('td');
+                
+                foreach ($cells as $cell) {
+                    $rowData[] = trim($cell->nodeValue);
+                }
+
+                $datas[] = $rowData;
+            }
+
+            // dd($datas);
+
+            return $datas;
+        } catch (Exception $e) {
+            return "Vui lòng đăng nhập lại!";
+        } finally {
+            curl_close($ch);
+        }
+    }
+
     public function test() {
         $ch = curl_init();
 
         try {
             $timestamp = now()->getPreciseTimestamp(3);
 
-            $scriptName = 'NEORemoting';
-            $methodName = 'getRec';
+            $scriptName = 'DataRemoting';
+            $methodName = 'getDoc';
 
             $postData = "callCount=1".PHP_EOL;
             $postData .= "c0-scriptName=".$scriptName.PHP_EOL;
             $postData .= "c0-methodName=".$methodName.PHP_EOL;
             $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
             // $postData .= "c0-param0=string:neo.cmdv114.catmo_ioc.checkVSCC(%2284845674221%22%2C%22VNPT%20VSCC%22)".PHP_EOL;
-            $postData .= "c0-param0=string:neo.cmdv114.vinacore_new.layTTThueBao_v5('84845674221'%2C'0')".PHP_EOL;
+            // $postData .= "c0-param0=string:neo.cmdv114.vinacore_new.layTTThueBao_v5('84845674221'%2C'0')".PHP_EOL;
             // $postData .= "c0-param0=string:neo.cmdv114.vinanv_4G.catmoICOC('0'%2C'0'%2C'1'%2C'84845674221'%2C'%3B'%2C''%2C'cuongpp_dng')"
             //              .PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinanv.docBctkSIM_(%2208%2F02%2F2026%22%2C%22admin_dng%22%2C%22all%22)".PHP_EOL;
             $postData .= "c0-param1=boolean:false".PHP_EOL;
             $postData .= "xml=true".PHP_EOL;
 
@@ -664,8 +730,45 @@ class CcbsService
             ]);
 
             $response = curl_exec($ch);
-            dd($response);
+            // dd($response);
+            $html = $this->between($response, 'var s0="', '";');
+            // dd($html);
+
+            $decodedHtml = html_entity_decode($html, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            // dd($html, $decodedHtml);
+
+            $decodedHtml = preg_replace_callback('/\\\\u([0-9a-fA-F]{4})/', function ($matches) {
+                return mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UCS-2BE');
+            }, $decodedHtml);
+            
+            // $decodedHtml = str_replace(['\\', "<font size='2'>"], '', $decodedHtml);
+            $decodedHtml = str_replace(['\\n', '\\'], '', $decodedHtml);
+            // dd($decodedHtml);
+
+            $encodedHtml = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8"); 
+
+            $dom = new DOMDocument();
+            @$dom->loadHTML($encodedHtml);
+            // dd($dom);
+
+            $xpath = new DOMXPath($dom);
+
+            $rows = $xpath->query("//*[contains(@class, 'row0')]");
+            // dd($rows->item(0)->childNodes);
+            $datas = [];
+            foreach ($rows as $row) {
+                $rowData = [];
+                $cells = $row->getElementsByTagName('td');
+                
+                foreach ($cells as $cell) {
+                    $rowData[] = trim($cell->nodeValue);
+                }
+
+                $datas[] = $rowData;
+            }
+            dd($datas);
         } catch (Exception $e) {
+            throw $e;
             return "Vui lòng đăng nhập lại!";
         } finally {
             curl_close($ch);

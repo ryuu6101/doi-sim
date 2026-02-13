@@ -5,10 +5,11 @@ namespace App\Http\Controllers\Admins;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\View;
+use App\Repositories\EsimReports\EsimReportRepositoryInterface;
 
 class SectionController extends Controller
 {
-    public function __construct() {
+    public function __construct(protected EsimReportRepositoryInterface $esimReportRepos) {
         $info = [];
         if (file_exists(storage_path('app\Login.txt'))) {
             $file = file_get_contents(storage_path('app\Login.txt'));
@@ -57,5 +58,28 @@ class SectionController extends Controller
 
     public function toggleSmtSmo() {
         return view('admins.sections.toggle-smt-smo.index');
+    }
+
+    public function importEsimReport() {
+        return view('admins.sections.esim-report.import.index');
+    }
+
+    public function listEsimReport(Request $request) {
+        $params = $request->params ?? [];
+        $paginate = $request->paginate ?? 50;
+
+        $esim_reports = $this->esimReportRepos->filter($params, $paginate, 'desc', 'date_time');
+
+        if ($request->ajax()) {
+            return view('admins.sections.esim-report.statistical.list-partial', compact('esim_reports'));
+        }
+
+        $service_codes = $this->esimReportRepos->getColumn('service_code');
+        $actions = $this->esimReportRepos->getColumn('action');
+        $sub_types = $this->esimReportRepos->getColumn('sub_type');
+        $accounts = $this->esimReportRepos->getColumn('account');
+
+        return view('admins.sections.esim-report.statistical.index', 
+                compact('esim_reports', 'service_codes', 'actions', 'sub_types', 'accounts'));
     }
 }

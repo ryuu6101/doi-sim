@@ -34,52 +34,28 @@
                 </a>
             </li>
 
-            {{-- <li class="nav-item dropdown nav-item-dropdown-xl">
-                <a href="#" class="navbar-nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-magnifying-glass mr-2"></i>
-                    Tra cứu
-                </a>
-            
-                <div class="dropdown-menu dropdown-scrollable-xl">
-                    <a href="{{ route('msin-check.index') }}" class="dropdown-item rounded">
-                        <i class="fa-solid fa-sim-card"></i>
-                        <span>Kiểm tra MSIN</span>
-                    </a>
-                    <a href="{{ route('mobile-check.index') }}" class="dropdown-item rounded">
-                        <i class="fa-solid fa-mobile-screen-button"></i>
-                        <span>Kiểm tra thuê bao</span>
-                    </a>
-                    <a href="{{ route('mi-check.index') }}" class="dropdown-item rounded">
-                        <i class="fa-solid fa-signal"></i>
-                        <span>Tra cứu dung lượng</span>
-                    </a>
-                </div>
-            </li> --}}
-
             <li class="nav-item">
                 <a href="{{ route('toggle-gprs.index') }}" class="navbar-nav-link">
                     <i class="fa-solid fa-rss"></i>
-                        <span>Đóng mở dịch vụ GPRS</span>
+                    <span>Đóng mở dịch vụ GPRS</span>
                 </a>
             </li>
 
-            {{-- <li class="nav-item dropdown nav-item-dropdown-xl">
+            <li class="nav-item dropdown nav-item-dropdown-xl">
                 <a href="#" class="navbar-nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-toggle-on mr-2"></i>
-                    Đóng mở dịch vụ khác
+                    <i class="fa-solid fa-chart-bar mr-2"></i>
+                    Báo cáo đóng mở SIM
                 </a>
             
                 <div class="dropdown-menu dropdown-scrollable-xl">
-                    <a href="{{ route('toggle-smt-smo.index') }}" class="dropdown-item rounded">
-                        <i class="fa-solid fa-square-share-nodes"></i>
-                        <span>Đóng mở SMT/SMO</span>
+                    <a href="{{ route('esim-report.import.index') }}" class="dropdown-item">
+                        <span>Lấy báo cáo</span>
                     </a>
-                    <a href="{{ route('toggle-ioc.index') }}" class="dropdown-item rounded">
-                        <i class="fa-solid fa-phone-volume"></i>
-                        <span>Cắt mở IOC</span>
+                    <a href="{{ route('esim-report.statistical.index') }}" class="dropdown-item">
+                        <span>Xem thống kê</span>
                     </a>
                 </div>
-            </li> --}}
+            </li>
         </ul>
     </div>
 
@@ -96,16 +72,3 @@
     </div>
 </div>
 <!-- /main navbar -->
-
-@push('scripts')
-<script>
-    let current_url = "{{ url()->current() }}";
-    let nav_link = $(`a[href="${current_url}"]`);
-
-    if (nav_link.hasClass('dropdown-item')) {
-        nav_link.parent().prev('a.navbar-nav-link.dropdown-toggle').addClass('active');
-    }
-
-    nav_link.addClass('active');
-</script>
-@endpush

@@ -24,6 +24,7 @@
 	<script src="{{ asset('global_assets/js/plugins/visualization/d3/d3_tooltip.js') }}"></script>
 	<script src="{{ asset('global_assets/js/plugins/ui/moment/moment.min.js') }}"></script>
 	<script src="{{ asset('global_assets/js/plugins/pickers/daterangepicker.js') }}"></script>
+	<script src="{{ asset('global_assets/js/plugins/forms/selects/select2.min.js') }}"></script>
 	<script src="{{ asset('global_assets/js/plugins/notifications/noty.min.js') }}"></script>
 
 	<script src="{{ asset('assets/js/app.js') }}"></script>

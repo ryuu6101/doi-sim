@@ -69,6 +69,7 @@
                     <th class="text-center">SIM</th>
                     <th class="text-center">Ghi chú</th>
                     <th class="text-center">Trạng thái</th>
+                    <th class="text-center">GPRS</th>
                     <th class="text-center">Link QR</th>
                     <th class="text-center">QR Code</th>
                 </tr>
@@ -106,8 +107,6 @@
     let total = 0;
 
     $(document).ready(function() {
-        // $('.sidebar.sidebar-main').addClass("sidebar-main-resized");
-
         $(document).on('click', '.btn-run', function() {
             let list = $('textarea[name="list"]').val();
 
@@ -181,6 +180,7 @@
             row.append($('<td>' + (boline[2] ?? $('input[name="ghichu"]').val() ?? '') + '</td>'));
             row.append($('<td></td>'));
             row.append($('<td></td>'));
+            row.append($('<td></td>'));
             row.append($('<td class="text-nowrap"></td>'));
 
             $('#progress_list').append(row);
@@ -190,7 +190,7 @@
                 block: 'end'
             });
 
-            if (doi_sim) await doisim(row, boline) && lay_qr && await layqr(row, boline);
+            if (doi_sim) await doisim(row, boline) && kh_gprs(row, boline) && lay_qr && await layqr(row, boline);
             else if (lay_qr) await layqr(row, boline);
 
             if (index < total) timeout = setTimeout(chay, delay * 1000);
@@ -201,17 +201,19 @@
             let sdt = boline[0] ?? '';
             let esim = boline[1] ?? '';
             let ghichu = boline[2] ?? $('input[name="ghichu"]').val() ?? '';
+
+            let sim = row.children().eq(3);
+            let status = row.children().eq(4);
     
             if (esim == '') {
-                row.children().eq(3).text('Không có SIM!');
+                sim.text('Không có SIM!');
                 return false;
             }
 
-            let cell = row.children().eq(4);
-            cell.text('Bắt đầu đổi sim ...');
+            status.text('Bắt đầu đổi sim ...');
 
             try {
-                let result = await $.ajax({
+                let doi_sim = await $.ajax({
                     type: 'POST',
                     url: "{{ route('doi-sim.post') }}",
                     data: {
@@ -221,17 +223,65 @@
                     },
                 });
 
-                if (result.includes("|vl")) {
-                    cell.text(thongbaos[result.replace("|vl", "")] ?? "Lỗi khi đổi SIM cho thuê bao #404");
+                if (doi_sim.includes("|vl")) {
+                    status.text(thongbaos[doi_sim.replace("|vl", "")] ?? "Lỗi khi đổi SIM cho thuê bao #404");
                 } else {
-                    cell.text(result);
+                    status.text(doi_sim);
                 }
 
-                if (result != "1|vl" && result != "2|vl") return false;
+                if (doi_sim != "1|vl" && doi_sim != "2|vl") return false;
 
                 return true;
             } catch (error) {
-                cell.text('Lỗi ngoại biên!');
+                status.text('Lỗi ngoại biên!');
+                return false;
+            }
+        }
+
+        async function kh_gprs(row, boline) {
+            let sdt = boline[0];
+
+            let gprs = row.children().eq(5);
+
+            gprs.text('Đang bật GPRS ...');
+
+            try {
+                let lay_gprs = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('lay-dvu.post') }}",
+                    data: {
+                        'sdt': '84'+sdt,
+                        'dich_vu': 'GPRS',
+                    },
+                });
+
+                if (!lay_gprs.includes('OK|')) {
+                    gprs.text(lay_gprs);
+                    return true;
+                }
+
+                let tach = lay_gprs.split("|");
+                let checked = tach[1];
+
+                if (checked != 0) {
+                    gprs.text(checked > 0 ? 'THÀNH CÔNG!' : 'THẤT BẠI!');
+                    return true;
+                }
+
+                let kh_gprs = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('dm-dvu.post') }}",
+                    data: {
+                        'sdt': '84'+sdt,
+                        'dvu': 'GPRS',
+                    },
+                });
+
+                gprs.text(kh_gprs);
+
+                return true;
+            } catch (error) {
+                gprs.text('Lỗi ngoại biên!');
                 return false;
             }
         }
@@ -239,30 +289,32 @@
         async function layqr(row, boline) {
             let sdt = boline[0];
 
-            let cell = row.children().eq(5);
-            cell.text('Lấy QR Esim ...');
+            let link_qr = row.children().eq(6);
+            let qr_code = row.children().eq(7);
+
+            link_qr.text('Lấy QR Esim ...');
 
             try {
-                let result1 = await $.ajax({
+                let lay_ma_sim = await $.ajax({
                     type: 'POST',
                     url: "{{ route('lay-ma-sim.post') }}",
                     data: {'sdt': sdt},
                 });
 
-                cell.text(result1);
+                link_qr.text(lay_ma_sim);
 
-                let tach = result1.split('|');
+                let tach = lay_ma_sim.split('|');
 
                 if (tach.length <= 1) return false;
 
                 if (tach[0] == "" || tach[1] == "") {
-                    cell.text("Thiếu mã QR hoặc BarCode");
+                    link_qr.text("Thiếu mã QR hoặc BarCode");
                     return false;
                 }
 
-                cell.text("Tải ảnh QR ...");
+                link_qr.text("Tải ảnh QR ...");
 
-                let result2 = await $.ajax({
+                let tai_anh = await $.ajax({
                     type: 'POST',
                     url: "{{ route('tai-anh.post') }}",
                     data: {
@@ -272,25 +324,25 @@
                     },
                 });
 
-                if (!result2) {
-                    cell.text("Tải ảnh thất bại!");
+                if (!tai_anh) {
+                    link_qr.text("Tải ảnh thất bại!");
                     return false;
                 }
 
-                row.children().eq(6).html(`
-                    <a href="${result2}" target="_blank" class="btn btn-outline-primary btn-sm">
+                qr_code.html(`
+                    <a href="${tai_anh}" target="_blank" class="btn btn-outline-primary btn-sm">
                         <i class="fa-solid fa-eye"></i>
                     </a>
-                    <a href="${result2}" target="_blank" class="btn btn-outline-success btn-sm" download>
+                    <a href="${tai_anh}" target="_blank" class="btn btn-outline-success btn-sm" download>
                         <i class="fa-solid fa-cloud-arrow-down"></i>
                     </a>
                 `);
 
-                cell.text(result1);
+                link_qr.text(lay_ma_sim);
 
                 return true;
             } catch (error) {
-                cell.text('Lỗi ngoại biên!');
+                link_qr.text('Lỗi ngoại biên!');
                 return false;
             }
         }

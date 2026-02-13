@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admins;
 
 use Exception;
+use Carbon\Carbon;
+use App\Models\EsimReport;
 use Illuminate\Http\Request;
 use App\Services\CcbsService;
 use App\Services\CcosService;
@@ -117,6 +119,31 @@ class EsimController extends Controller
         $goiden = $request->input('goiden');
 
         return $this->ccbsService->catmoIOC($sdt, $goidi, $goiden);
+    }
+
+    public function layBcEsim(Request $request) {
+        $date = $request->input('date');
+
+        $lay_bc_esim = $this->ccbsService->layBcEsim($date);
+        if (is_string($lay_bc_esim)) return $lay_bc_esim;
+
+        EsimReport::whereDate('date_time', Carbon::createFromFormat('d/m/Y', $date))->delete();
+
+        foreach ($lay_bc_esim as $key => $value) {
+            EsimReport::create([
+                'date_time' => Carbon::createFromFormat('d/m/Y H:i:s', $value[1]),
+                'mobile_number' => $value[2],
+                'service_code' => $value[3],
+                'action' => $value[4],
+                'sub_type' => $value[5],
+                'old_esim' => $value[6],
+                'new_esim' => $value[7],
+                'account' => $value[8],
+                'note' => $value[9],
+            ]);
+        }
+
+        return "Import thành công";
     }
 
     public function test() {

@@ -29,7 +29,8 @@
 
                 <div class="row mb-2">
                     <div class="col">
-                        <textarea name="list" rows="5" class="form-control border-dark rounded-0 bg-light w-100"></textarea>
+                        <textarea name="list" rows="5" class="form-control border-dark rounded-0 bg-light w-100" 
+                        placeholder="Nhập IMEI cũ - IMEI mới - SĐT"></textarea>
                     </div>
                 </div>
             </div>
@@ -46,6 +47,7 @@
                     <th class="text-center">SIM</th>
                     <th class="text-center">Ghi chú</th>
                     <th class="text-center">Kết quả</th>
+                    <th class="text-center">GPRS</th>
                 </tr>
             </thead>
             <tbody id="progress_list">
@@ -80,8 +82,6 @@
     let phones = [];
 
     $(document).ready(function() {
-        // $('.sidebar.sidebar-main').addClass("sidebar-main-resized");
-
         $(document).on('click', '.btn-run', function() {
             let list = $('textarea[name="list"]').val();
 
@@ -128,6 +128,7 @@
             row.append($('<td>' + (boline[2] ?? '') + '</td>'));
             row.append($('<td>' + (boline[3] ?? $('input[name="ghichu"]').val() ?? '') + '</td>'));
             row.append($('<td></td>'));
+            row.append($('<td></td>'));
 
             $('#progress_list').append(row);
 
@@ -171,6 +172,7 @@
 
             let note = row.children().eq(4);
             let kqua = row.children().eq(5);
+            let gprs = row.children().eq(6);
 
             if (sdt == '') {
                 note.text('Không có SĐT!');
@@ -261,6 +263,43 @@
                 } else {
                     kqua.text(doi_sim);
                 }
+
+                if (doi_sim != "1|vl" && doi_sim != "2|vl") return;
+
+                gprs.text('Đang bật GPRS ...');
+
+                let lay_gprs = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('lay-dvu.post') }}",
+                    data: {
+                        'sdt': '84'+sdt,
+                        'dich_vu': 'GPRS',
+                    },
+                });
+
+                if (!lay_gprs.includes('OK|')) {
+                    gprs.text(lay_gprs);
+                    return;
+                }
+
+                tach = lay_gprs.split("|");
+                let checked = tach[1];
+
+                if (checked != 0) {
+                    gprs.text(checked > 0 ? 'THÀNH CÔNG!' : 'THẤT BẠI!');
+                    return;
+                }
+
+                let kh_gprs = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('dm-dvu.post') }}",
+                    data: {
+                        'sdt': '84'+sdt,
+                        'dvu': 'GPRS',
+                    },
+                });
+
+                gprs.text(kh_gprs);
 
             } catch (error) {
                 kqua.text('Lỗi ngoại biên!');

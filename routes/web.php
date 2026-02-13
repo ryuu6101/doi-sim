@@ -21,6 +21,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/toggle-gprs', [SectionController::class, 'toggleGPRS'])->name('toggle-gprs.index');
     Route::get('/toggle-ioc', [SectionController::class, 'toggleIOC'])->name('toggle-ioc.index');
     Route::get('/toggle-smt-smo', [SectionController::class, 'toggleSmtSmo'])->name('toggle-smt-smo.index');
+    Route::get('/esim-report/import', [SectionController::class, 'importEsimReport'])->name('esim-report.import.index');
+    Route::get('/esim-report/statistical', [SectionController::class, 'listEsimReport'])->name('esim-report.statistical.index');
     
     Route::post('/ccbs-login', [EsimController::class, 'ccbsLogin'])->name('ccbs-login.post');
     Route::post('/doi-sim', [EsimController::class, 'doiSim'])->name('doi-sim.post');
@@ -36,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/dm-dvu', [EsimController::class, 'dmDVu'])->name('dm-dvu.post');
     Route::post('/lay-ioc', [EsimController::class, 'layIOC'])->name('lay-ioc.post');
     Route::post('/catmo-ioc', [EsimController::class, 'catmoIOC'])->name('catmo-ioc.post');
+    Route::post('/lay-bc-esim', [EsimController::class, 'layBcEsim'])->name('lay-bc-esim.post');
 });
 
 // Route::get('/test', [EsimController::class, 'test']);

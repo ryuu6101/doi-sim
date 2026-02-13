@@ -35,6 +35,7 @@
                     <div class="text-uppercase font-size-xs line-height-xs">Menu</div> 
                     <i class="icon-menu" title="Main"></i>
                 </li>
+
                 <li class="nav-item">
                     <a href="{{ route('home.index') }}" class="nav-link">
                         <i class="fa-solid fa-qrcode"></i>
@@ -79,7 +80,7 @@
 
                 <li class="nav-item">
                     <a href="{{ route('toggle-smt-smo.index') }}" class="nav-link">
-                        <i class="fa-solid fa-square-share-nodes"></i>
+                        <i class="fa-solid fa-comment-sms"></i>
                         <span>Đóng mở SMT/SMO</span>
                     </a>
                 </li>
@@ -91,6 +92,22 @@
                     </a>
                 </li>
 
+                <li class="nav-item nav-item-submenu">
+                    <a href="#" class="nav-link">
+                        <i class="fa-solid fa-chart-bar"></i>
+                        <span>Báo cáo cắt mở SIM</span>
+                    </a>
+
+                    <ul class="nav nav-group-sub" data-submenu-title="Layouts" style="display: none;">
+                        <li class="nav-item">
+                            <a href="{{ route('esim-report.import.index') }}" class="nav-link">Lấy báo cáo</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('esim-report.statistical.index') }}" class="nav-link">Xem thống kê</a>
+                        </li>
+                    </ul>
+                </li>
+
             </ul>
         </div>
         <!-- /main navigation -->
@@ -100,3 +117,19 @@
     
 </div>
 <!-- /main sidebar -->
+
+@push('scripts')
+<script>
+    let current_url = "{{ url()->current() }}";
+    let nav_link = $('.nav-sidebar, .navbar-nav').find(`a[href="${current_url}"]`);
+
+    if (nav_link.hasClass('dropdown-item')) {
+        nav_link.parent().prev('a.navbar-nav-link.dropdown-toggle').addClass('active');
+    }
+    
+    nav_link.closest('.nav-group-sub').css('display', 'block');
+    nav_link.closest('.nav-item-submenu').addClass('nav-item-open');
+
+    nav_link.addClass('active');
+</script>
+@endpush
