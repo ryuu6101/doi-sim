@@ -51,7 +51,10 @@ class CcbsService
         if (!is_dir($this->qrCodePath)) mkdir($this->qrCodePath, 0755, true);
     }
 
-    public function ccbsLogin($username, $password) {
+    public function ccbsLogin($username = "", $password = "") {
+        if ($username == "") $username = $this->username;
+        if ($password == "") $password = $this->password;
+
         $data = [
             'status' => 0,
             'message' => 'Đã xảy ra lỗi!',
@@ -87,16 +90,11 @@ class CcbsService
                 ]
             ]);
             
-            // Execute request
             $response = curl_exec($ch);
             
             if ($response === false) {
                 $data['message'] = "Không có quyền truy cập";
-                return $data;
-            }
-
-            // Handle response
-            if ($response == 0) {
+            } elseif ($response == 0) {
                 $cookies_list = curl_getinfo($ch, CURLINFO_COOKIELIST);
                 $cookies_arr = [];
                 foreach ($cookies_list as $key => $value) {
@@ -151,13 +149,14 @@ class CcbsService
         $ch = curl_init();
         
         try {
+            $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
             $timestamp = now()->getPreciseTimestamp(3);
 
             $postData = "callCount=1".PHP_EOL;
             $postData .= "c0-scriptName=NEORemoting".PHP_EOL;
             $postData .= "c0-methodName=getRec".PHP_EOL;
             $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
-            $postData .= "c0-param0=string:neo.cmdv114.vinanv.chkSMOI('84".$sdt."'%2C'".$esim."')".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinanv.chkSMOI('".$sdt."'%2C'".$esim."')".PHP_EOL;
             $postData .= "c0-param1=boolean:false".PHP_EOL;
             $postData .= "xml=true".PHP_EOL;
 
@@ -195,7 +194,7 @@ class CcbsService
                 $KQ = $this->getStringData($response, "kqua_chk");
                 $oked = $this->between($response, "var s0=\"", "\";");
 
-                if ($oked == null) return "Vui lòng đăng nhập lại!";
+                if ($oked === null) return "Vui lòng đăng nhập lại!";
 
                 return $oked."|vl";
             } catch (Exception $e) {
@@ -232,8 +231,9 @@ class CcbsService
         $ch = curl_init();
 
         try {
+            $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
             $timestamp = now()->getPreciseTimestamp(3);
-            $getUrl = "http://10.159.22.104/ccbs/main?1iutlomLork=gjsot5pl{tizout&pl{tizout=neo.pttb_new.pttb.layTTThueBao_esim(%2784".
+            $getUrl = "http://10.159.22.104/ccbs/main?1iutlomLork=gjsot5pl{tizout&pl{tizout=neo.pttb_new.pttb.layTTThueBao_esim(%27".
                         $sdt."%27)&_=".$timestamp;
 
             curl_setopt_array($ch, [
@@ -256,7 +256,7 @@ class CcbsService
 
             if ($Barcode == "") return "Không lấy được Barcode";
 			if ($esim == "1" && $QRCode == "") return "Không lấy được QrCode Esim";
-			if ($esim == "0" || $QRCode == "") return " Không có Esim";
+			if ($esim == "0" || $QRCode == "") return "Không có Esim";
 			return $QRCode."|".$Barcode;
         } catch (Exception $e) {
             return "Lỗi ngoại biên!";
@@ -282,46 +282,18 @@ class CcbsService
 
             $response = curl_exec($ch);
 
+            return $response;
+
             $file_path = $this->qrCodePath."/".$sdt.".pdf";
             file_put_contents($file_path, $response);
             
             if (file_exists($file_path)) return asset($file_path);
 
             return false;
-            // $this->convertAndCropPdf($response, 1, 993, 1558, $sdt);
         } catch (Exception $e) {
-            return false;
+            return "Lỗi ngoại biên!";
         } finally {
             curl_close($ch);
-        }
-    }
-
-    public function convertAndCropPdf($pdfContent, $pageNumber, $width, $height, $sdt) {
-        try {
-            // Create temporary file for PDF
-            $tempPdfPath = tempnam(sys_get_temp_dir(), 'pdf_');
-            file_put_contents($tempPdfPath, $pdfContent);
-
-            // Use Imagick to convert PDF to image
-            $imagick = new \Imagick();
-            $imagick->setResolution(150, 150);
-            $imagick->readImage($tempPdfPath . '[' . ($pageNumber - 1) . ']');
-            $imagick->scaleImage($width, $height);
-            $imagick->setImageFormat('jpeg');
-
-            // Crop the QR code region (737, 261, 110x110)
-            $imagick->cropImage(110, 110, 737, 261);
-
-            // Save the cropped image
-            $outputPath = $this->qrCodePath . '/' . $sdt . '.jpeg';
-            $imagick->writeImage($outputPath);
-            $imagick->destroy();
-
-            // Clean up temp file
-            unlink($tempPdfPath);
-
-        } catch (Exception $e) {
-            throw $e;
         }
     }
 
@@ -361,7 +333,7 @@ class CcbsService
             if ($kqua_chk === "0") return "Sim mới";
             return "Sim không tồn tại";
         } catch (Exception $e) {
-            return "Vui lòng đăng nhập lại!";
+            return "Lỗi ngoại biên!";
         } finally {
             curl_close($ch);
         }
@@ -394,7 +366,7 @@ class CcbsService
             $response = curl_exec($ch);
             $oked = $this->between($response, "var s1=\"", "\";");
 
-            if ($oked != 0) return "Vui lòng đăng nhập lại!";
+            if ($oked != "0") return "Vui lòng đăng nhập lại!";
 
             $data = "OK";
             $string_data = is_string($string_data) ? [$string_data] : $string_data;
@@ -404,8 +376,7 @@ class CcbsService
 
             return $data;
         } catch (Exception $e) {
-            throw $e;
-            return "Vui lòng đăng nhập lại!";
+            return "Lỗi ngoại biên!";
         } finally {
             curl_close($ch);
         }
@@ -446,7 +417,7 @@ class CcbsService
             if ($ten_tb == "") return "Không tìm thấy thuê bao!";
             return html_entity_decode($ten_tb);
         } catch (Exception $e) {
-            return "Vui lòng đăng nhập lại!";
+            return "Lỗi ngoại biên!";
         } finally {
             curl_close($ch);
         }
@@ -515,7 +486,7 @@ class CcbsService
 
             return $values;
         } catch (Exception $e) {
-            return "Vui lòng đăng nhập lại!";
+            return "Lỗi ngoại biên!";
         } finally {
             curl_close($ch);
         }
@@ -555,7 +526,7 @@ class CcbsService
 
             return $tach[2] ?? "THẤT BẠI";
         } catch (Exception $e) {
-            return "Vui lòng đăng nhập lại!";
+            return "Lỗi ngoại biên!";
         } finally {
             curl_close($ch);
         }
@@ -591,7 +562,7 @@ class CcbsService
 
             return $goi_di."|".$goi_den;
         } catch (Exception $e) {
-            return "Vui lòng đăng nhập lại!";
+            return "Lỗi ngoại biên!";
         } finally {
             curl_close($ch);
         }
@@ -631,7 +602,7 @@ class CcbsService
             if ($tach[0] == $goidi && $tach[1] == $goiden) return "THÀNH CÔNG";
             return "THẤT BẠI";
         } catch (Exception $e) {
-            return "Vui lòng đăng nhập lại!";
+            return "Lỗi ngoại biên!";
         } finally {
             curl_close($ch);
         }
@@ -692,7 +663,7 @@ class CcbsService
 
             return $datas;
         } catch (Exception $e) {
-            return "Vui lòng đăng nhập lại!";
+            return "Lỗi ngoại biên!";
         } finally {
             curl_close($ch);
         }

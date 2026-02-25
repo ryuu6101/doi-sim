@@ -2,26 +2,19 @@
 
 namespace App\Http\Controllers\Admins;
 
-use Exception;
-use Carbon\Carbon;
-use App\Models\EsimReport;
-use Illuminate\Http\Request;
-use App\Services\CcbsService;
-use App\Services\CcosService;
 use App\Http\Controllers\Controller;
+use App\Models\EsimReport;
+use App\Services\CcbsServiceWrapper;
+use App\Services\CcosService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class EsimController extends Controller
 {
-    protected $ccbsService;
-    protected $ccosService;
-
     public function __construct(
-        CcbsService $ccbsService,
-        CcosService $ccosService,
-    ) {
-        $this->ccbsService = $ccbsService;
-        $this->ccosService = $ccosService;
-    }
+        protected CcbsServiceWrapper $ccbsService,
+        protected CcosService $ccosService,
+    ) {}
 
     public function ccbsLogin(Request $request) {
         $username = $request->username;
@@ -55,7 +48,11 @@ class EsimController extends Controller
         $bar = $request->input('bar');
         $sdt = $request->input('sdt');
 
-        return $this->ccbsService->taiAnh($ma, $bar, $sdt);
+        $result = $this->ccbsService->taiAnh($ma, $bar, $sdt);
+        $file_path = "storage/qr_pdf/".$sdt.".pdf";
+        file_put_contents($file_path, $result);
+        
+        return file_exists($file_path) ? asset($file_path) : false;
     }
 
     public function checkMSIN(Request $request) {
@@ -127,6 +124,8 @@ class EsimController extends Controller
         $lay_bc_esim = $this->ccbsService->layBcEsim($date);
         if (is_string($lay_bc_esim)) return $lay_bc_esim;
 
+        if (count($lay_bc_esim) <= 0) return "Không tìm thấy kết quả";
+
         EsimReport::whereDate('date_time', Carbon::createFromFormat('d/m/Y', $date))->delete();
 
         foreach ($lay_bc_esim as $key => $value) {
@@ -143,7 +142,7 @@ class EsimController extends Controller
             ]);
         }
 
-        return "Import thành công";
+        return "Đã import ".count($lay_bc_esim)." kết quả";
     }
 
     public function test() {
