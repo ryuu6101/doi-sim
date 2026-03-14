@@ -39,6 +39,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/lay-ioc', [EsimController::class, 'layIOC'])->name('lay-ioc.post');
     Route::post('/catmo-ioc', [EsimController::class, 'catmoIOC'])->name('catmo-ioc.post');
     Route::post('/lay-bc-esim', [EsimController::class, 'layBcEsim'])->name('lay-bc-esim.post');
+    Route::post('/send-welcome-sms', [EsimController::class, 'sendWelcomeMessage'])->name('send-welcome-sms.post');
+    Route::post('/kich-hoat-gprs', [EsimController::class, 'kichHoatGPRS'])->name('kich-hoat-gprs.post');
 });
 
+// Route::get('/test-job', function() {
+//     \App\Jobs\DisableSMT::dispatch('84842908947')->delay(now()->addMinute(2));
+//     return redirect()->back()->with('success', 'job added');
+// });
+
 // Route::get('/test', [EsimController::class, 'test']);
+Route::get('/test-bn', [EsimController::class, 'testBrandName']);
+Route::get('/test-gprs', [EsimController::class, 'testGPRS']);

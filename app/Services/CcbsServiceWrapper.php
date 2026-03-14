@@ -5,7 +5,8 @@ namespace App\Services;
 class CcbsServiceWrapper
 {
     public function __construct(
-        protected CcbsService $ccbsService,
+        protected CcbsServiceHttp $ccbsService,
+        // protected CcbsService $ccbsService,
     ) {}
 
     public function withLoginRetry(callable $task) {

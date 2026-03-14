@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admins;
 
 use App\Http\Controllers\Controller;
-use App\Models\EsimReport;
+use App\Repositories\EsimReports\EsimReportRepositoryInterface;
+use App\Services\BrandNameService;
 use App\Services\CcbsServiceWrapper;
 use App\Services\CcosService;
+use App\Services\EsimService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -14,6 +16,9 @@ class EsimController extends Controller
     public function __construct(
         protected CcbsServiceWrapper $ccbsService,
         protected CcosService $ccosService,
+        protected BrandNameService $brandNameService,
+        protected EsimService $esimService,
+        protected EsimReportRepositoryInterface $esimReportRepos,
     ) {}
 
     public function ccbsLogin(Request $request) {
@@ -49,6 +54,9 @@ class EsimController extends Controller
         $sdt = $request->input('sdt');
 
         $result = $this->ccbsService->taiAnh($ma, $bar, $sdt);
+
+        if (!$result) return 'Lỗi ngoại biên!';
+
         $file_path = "storage/qr_pdf/".$sdt.".pdf";
         file_put_contents($file_path, $result);
         
@@ -126,10 +134,11 @@ class EsimController extends Controller
 
         if (count($lay_bc_esim) <= 0) return "Không tìm thấy kết quả";
 
-        EsimReport::whereDate('date_time', Carbon::createFromFormat('d/m/Y', $date))->delete();
+        $today_reports = $this->esimReportRepos->filter(['date_time' => $date]);
+        if($today_reports->count() > 0) $today_reports->toQuery()->delete();
 
         foreach ($lay_bc_esim as $key => $value) {
-            EsimReport::create([
+            $this->esimReportRepos->create([
                 'date_time' => Carbon::createFromFormat('d/m/Y H:i:s', $value[1]),
                 'mobile_number' => $value[2],
                 'service_code' => $value[3],
@@ -145,7 +154,28 @@ class EsimController extends Controller
         return "Đã import ".count($lay_bc_esim)." kết quả";
     }
 
+    public function sendWelcomeMessage(Request $request) {
+        $sdt = $request->input('sdt');
+
+        return $this->esimService->sendWelcomeMessage($sdt) ? 'THÀNH CÔNG' : 'THẤT BẠI';
+    }
+
+    public function kichHoatGPRS(Request $request) {
+        $sdt = $request->input('sdt');
+
+        return $this->esimService->kichHoatGPRS($sdt) ? 'THÀNH CÔNG' : 'THẤT BẠI';
+    }
+
     public function test() {
         return $this->ccbsService->test();
+    }
+
+    public function testBrandName() {
+        $send = $this->brandNameService->sendWelcomeMessage('84918354555', ['918354555', today()->format('d/M/y'), '0918354555']);
+        dd($send);
+    }
+
+    public function testGPRS() {
+        return $this->esimService->kichHoatGPRS('84842908947');
     }
 }

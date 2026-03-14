@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\User;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+
+class TestJob implements ShouldQueue
+{
+    use Queueable;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
+    {
+        User::create([
+            'username' => 'admin2',
+            'password' => bcrypt('Cnpt@2026'),
+        ]);
+    }
+}

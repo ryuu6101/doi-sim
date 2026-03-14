@@ -14,6 +14,10 @@ class EsimReportFilter extends QueryFilter
         'account',
     ];
 
+    public function filterDateTime($value) {
+        return $this->builder->whereDate('date_time', Carbon::createFromFormat('d/m/Y', $value));
+    }
+
     public function filterDateTimeStart($value) {
         return $this->builder->whereDate('date_time', '>=', Carbon::createFromFormat('d/m/Y', $value));
     }

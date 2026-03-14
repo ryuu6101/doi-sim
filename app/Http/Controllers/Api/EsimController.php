@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\BrandNameService;
 use App\Services\CcbsServiceWrapper;
+use App\Services\EsimService;
 use Illuminate\Http\Request;
 
 class EsimController extends Controller
@@ -19,11 +21,13 @@ class EsimController extends Controller
 
     public function __construct(
         protected CcbsServiceWrapper $ccbsService,
+        protected BrandNameService $brandNameService,
+        protected EsimService $esimService,
     ) {}
 
     public function doiSim(Request $request) {
         $request->validate([
-            'sdt' => 'required',
+            'sdt' => 'required|min:11',
             'esim' => 'required'
         ]);
 
@@ -42,6 +46,11 @@ class EsimController extends Controller
         } else {
             $data["message"] = $result;
         }
+
+        // if ($data['status'] != 'OK') return response()->json($data);
+
+        // $data['GPRS'] = (int)$this->esimService->kichHoatGPRS($sdt);
+        // $data['SMS'] = (int)$this->esimService->sendWelcomeMessage($sdt);
 
         return response()->json($data);
     }

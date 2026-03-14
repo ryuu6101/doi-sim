@@ -52,9 +52,9 @@ class CcosService
 
             $data = json_decode($decoded->Data);
 
-            $name = $data->LimitUsage[0]->description;
-            $limit = $data->LimitUsage[0]->absoluteLimits->bidirVolume / pow(1024, 2);
-            $used = $data->AccumulatedData[0]->absoluteAccumulated->bidirVolume / pow(1024, 3);
+            $name = $data->LimitUsage[0]->description ?? '-';
+            $limit = ($data->LimitUsage[0]->absoluteLimits->bidirVolume ?? 0) / pow(1024, 2);
+            $used = ($data->AccumulatedData[0]->absoluteAccumulated->bidirVolume ?? 0) / pow(1024, 3);
 
             return $name."|".round($limit, 1)." GB|".round($used, 1)." GB";
         } catch (Exception $e) {

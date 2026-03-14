@@ -43,11 +43,12 @@
                 <tr>
                     <th class="text-center" style="width:5rem">STT</th>
                     <th class="text-center">Số TB</th>
-                    <th class="text-center">IMEI cũ</th>
-                    <th class="text-center">SIM</th>
+                    <th class="text-center">ICIC cũ</th>
+                    <th class="text-center">ICIC mới</th>
                     <th class="text-center">Ghi chú</th>
                     <th class="text-center">Kết quả</th>
                     <th class="text-center">GPRS</th>
+                    <th class="text-center">SMS</th>
                 </tr>
             </thead>
             <tbody id="progress_list">
@@ -129,6 +130,7 @@
             row.append($('<td>' + (boline[3] ?? $('input[name="ghichu"]').val() ?? '') + '</td>'));
             row.append($('<td></td>'));
             row.append($('<td></td>'));
+            row.append($('<td></td>'));
 
             $('#progress_list').append(row);
 
@@ -158,7 +160,6 @@
             });
 
             let ghichu = string.slice(slice_pos).trim();
-            // if (ghichu != '' && ghichu != "--紧急替换一下") boline[3] = ghichu;
             if (ghichu != '' && !string.includes('母卡')) boline[3] = ghichu;
 
             return boline;
@@ -173,6 +174,7 @@
             let note = row.children().eq(4);
             let kqua = row.children().eq(5);
             let gprs = row.children().eq(6);
+            let sms = row.children().eq(7);
 
             if (sdt == '') {
                 note.text('Không có SĐT!');
@@ -224,27 +226,27 @@
                     return;
                 }
 
-                kqua.text('Kiểm tra thông tin thuê bao ...');
+                // kqua.text('Kiểm tra thông tin thuê bao ...');
 
-                let lay_tttbao = await $.ajax({
-                    type: 'POST',
-                    url: "{{ route('lay-tttb.post') }}",
-                    data: {
-                        'sdt': '84'+sdt,
-                        'matinh': matinh,
-                    },
-                });
+                // let lay_tttbao = await $.ajax({
+                //     type: 'POST',
+                //     url: "{{ route('lay-tttb.post') }}",
+                //     data: {
+                //         'sdt': '84'+sdt,
+                //         'matinh': matinh,
+                //     },
+                // });
 
-                if (lay_tttbao == "Vui lòng đăng nhập lại!") {
-                    kqua.text(lay_tttbao);
-                    return;
-                }
+                // if (lay_tttbao == "Vui lòng đăng nhập lại!") {
+                //     kqua.text(lay_tttbao);
+                //     return;
+                // }
 
-                if (lay_tttbao.toUpperCase() != "CÔNG TY CỔ PHẦN CÔNG NGHỆ CNPT") {
-                    note.text('Thuê bao không hợp lệ');
-                    kqua.text(lay_tttbao);
-                    return;
-                }
+                // if (lay_tttbao.toUpperCase() != "CÔNG TY CỔ PHẦN CÔNG NGHỆ CNPT") {
+                //     note.text('Thuê bao không hợp lệ');
+                //     kqua.text(lay_tttbao);
+                //     return;
+                // }
 
                 kqua.text('Bắt đầu đổi sim ...');
 
@@ -268,38 +270,54 @@
 
                 gprs.text('Đang bật GPRS ...');
 
-                let lay_gprs = await $.ajax({
-                    type: 'POST',
-                    url: "{{ route('lay-dvu.post') }}",
-                    data: {
-                        'sdt': '84'+sdt,
-                        'dich_vu': 'GPRS',
-                    },
-                });
+                // let lay_gprs = await $.ajax({
+                //     type: 'POST',
+                //     url: "{{ route('lay-dvu.post') }}",
+                //     data: {
+                //         'sdt': '84'+sdt,
+                //         'dich_vu': 'GPRS',
+                //     },
+                // });
 
-                if (!lay_gprs.includes('OK|')) {
-                    gprs.text(lay_gprs);
-                    return;
-                }
+                // if (!lay_gprs.includes('OK|')) {
+                //     gprs.text(lay_gprs);
+                //     return;
+                // }
 
-                tach = lay_gprs.split("|");
-                let checked = tach[1];
+                // tach = lay_gprs.split("|");
+                // let checked = tach[1];
 
-                if (checked != 0) {
-                    gprs.text(checked > 0 ? 'THÀNH CÔNG!' : 'THẤT BẠI!');
-                    return;
-                }
+                // if (checked != 0) {
+                //     gprs.text(checked > 0 ? 'THÀNH CÔNG!' : 'THẤT BẠI!');
+                //     return;
+                // }
+
+                // let kh_gprs = await $.ajax({
+                //     type: 'POST',
+                //     url: "{{ route('dm-dvu.post') }}",
+                //     data: {
+                //         'sdt': '84'+sdt,
+                //         'dvu': 'GPRS',
+                //     },
+                // });
 
                 let kh_gprs = await $.ajax({
                     type: 'POST',
-                    url: "{{ route('dm-dvu.post') }}",
-                    data: {
-                        'sdt': '84'+sdt,
-                        'dvu': 'GPRS',
-                    },
+                    url: "{{ route('kich-hoat-gprs.post') }}",
+                    data: {'sdt': '84'+sdt},
                 });
 
                 gprs.text(kh_gprs);
+
+                // sms.text('Đang gửi SMS ...');
+
+                // let gui_sms = await $.ajax({
+                //     type: 'POST',
+                //     url: "{{ route('send-welcome-sms.post') }}",
+                //     data: {'sdt': '84'+sdt},
+                // });
+
+                // sms.text(gui_sms);
 
             } catch (error) {
                 kqua.text('Lỗi ngoại biên!');

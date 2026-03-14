@@ -104,7 +104,7 @@
 
                 <hr>
 
-                <div class="row mb-2 justify-content-end">
+                <div class="row mb-2 justify-content-start">
                     <div class="col-auto">
                         <select name="paginate" class="form-control">
                             <option value="50">50</option>

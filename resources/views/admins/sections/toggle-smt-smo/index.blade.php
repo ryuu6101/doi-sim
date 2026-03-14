@@ -285,7 +285,7 @@
                 let tach = lay_imei.split("|");
                 
                 if (tach.length < 2) {
-                    imei.text("Vui lòng đăng nhập lại!");
+                    imei.text(lay_imei);
                     return false;
                 }
 

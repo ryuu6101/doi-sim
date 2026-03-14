@@ -70,6 +70,7 @@
                     <th class="text-center">Ghi chú</th>
                     <th class="text-center">Trạng thái</th>
                     <th class="text-center">GPRS</th>
+                    <th class="text-center">SMS</th>
                     <th class="text-center">Link QR</th>
                     <th class="text-center">QR Code</th>
                 </tr>
@@ -164,7 +165,7 @@
             });
 
             let ghichu = string.slice(slice_pos).trim();
-            if (ghichu != '' && ghichu != "--紧急替换一下") boline[2] = ghichu;
+            if (ghichu != '' && !string.includes('母卡')) boline[2] = ghichu;
 
             return boline;
         }
@@ -181,6 +182,7 @@
             row.append($('<td></td>'));
             row.append($('<td></td>'));
             row.append($('<td></td>'));
+            row.append($('<td></td>'));
             row.append($('<td class="text-nowrap"></td>'));
 
             $('#progress_list').append(row);
@@ -191,6 +193,7 @@
             });
 
             if (doi_sim) await doisim(row, boline) && kh_gprs(row, boline) && lay_qr && await layqr(row, boline);
+            // if (doi_sim) await doisim(row, boline) && kh_gprs(row, boline) && gui_sms(row, boline) && lay_qr && await layqr(row, boline);
             else if (lay_qr) await layqr(row, boline);
 
             if (index < total) timeout = setTimeout(chay, delay * 1000);
@@ -246,35 +249,41 @@
             gprs.text('Đang bật GPRS ...');
 
             try {
-                let lay_gprs = await $.ajax({
-                    type: 'POST',
-                    url: "{{ route('lay-dvu.post') }}",
-                    data: {
-                        'sdt': '84'+sdt,
-                        'dich_vu': 'GPRS',
-                    },
-                });
+                // let lay_gprs = await $.ajax({
+                //     type: 'POST',
+                //     url: "{{ route('lay-dvu.post') }}",
+                //     data: {
+                //         'sdt': '84'+sdt,
+                //         'dich_vu': 'GPRS',
+                //     },
+                // });
 
-                if (!lay_gprs.includes('OK|')) {
-                    gprs.text(lay_gprs);
-                    return true;
-                }
+                // if (!lay_gprs.includes('OK|')) {
+                //     gprs.text(lay_gprs);
+                //     return true;
+                // }
 
-                let tach = lay_gprs.split("|");
-                let checked = tach[1];
+                // let tach = lay_gprs.split("|");
+                // let checked = tach[1];
 
-                if (checked != 0) {
-                    gprs.text(checked > 0 ? 'THÀNH CÔNG!' : 'THẤT BẠI!');
-                    return true;
-                }
+                // if (checked != 0) {
+                //     gprs.text(checked > 0 ? 'THÀNH CÔNG!' : 'THẤT BẠI!');
+                //     return true;
+                // }
+
+                // let kh_gprs = await $.ajax({
+                //     type: 'POST',
+                //     url: "{{ route('dm-dvu.post') }}",
+                //     data: {
+                //         'sdt': '84'+sdt,
+                //         'dvu': 'GPRS',
+                //     },
+                // });
 
                 let kh_gprs = await $.ajax({
                     type: 'POST',
-                    url: "{{ route('dm-dvu.post') }}",
-                    data: {
-                        'sdt': '84'+sdt,
-                        'dvu': 'GPRS',
-                    },
+                    url: "{{ route('kich-hoat-gprs.post') }}",
+                    data: {'sdt': '84'+sdt},
                 });
 
                 gprs.text(kh_gprs);
@@ -286,11 +295,34 @@
             }
         }
 
+        async function gui_sms(row, boline) {
+            let sdt = boline[0];
+
+            let sms = row.children().eq(6);
+
+            sms.text('Đang gửi SMS ...');
+
+            try {
+                let gui_sms = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('send-welcome-sms.post') }}",
+                    data: {'sdt': '84'+sdt},
+                });
+
+                sms.text(gui_sms);
+
+                return true;
+            } catch (error) {
+                sms.text('Lỗi ngoại biên!');
+                return false;
+            }
+        }
+
         async function layqr(row, boline) {
             let sdt = boline[0];
 
-            let link_qr = row.children().eq(6);
-            let qr_code = row.children().eq(7);
+            let link_qr = row.children().eq(7);
+            let qr_code = row.children().eq(8);
 
             link_qr.text('Lấy QR Esim ...');
 

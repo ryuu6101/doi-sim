@@ -180,7 +180,7 @@ class CcbsService
                 $postData .= "c0-scriptName=NEORemoting".PHP_EOL;
                 $postData .= "c0-methodName=getValue".PHP_EOL;
                 $postData .= "c0-id=8974_".$timestamp.PHP_EOL;
-                $postData .= "c0-param0=string:neo.cmdv114.vinanv.dsimtb('84".$sdt."'%2C'".$esim ."'%2C0%2C'".$ghichu."'%2C'".
+                $postData .= "c0-param0=string:neo.cmdv114.vinanv.dsimtb('".$sdt."'%2C'".$esim ."'%2C0%2C'".$ghichu."'%2C'".
                                 $this->username."'%2C'0')".PHP_EOL;
                 $postData .= "c0-param1=boolean:false".PHP_EOL;
                 $postData .= "xml=true".PHP_EOL;
@@ -331,7 +331,8 @@ class CcbsService
             if ($kqua_chk === "3") return "Sim đã bị hủy do đổi SIM";
             if ($kqua_chk === "4") return "Sim chưa được kích hoạt";
             if ($kqua_chk === "0") return "Sim mới";
-            return "Sim không tồn tại";
+            // return "Sim không tồn tại";
+            return "Vui lòng đăng nhập lại!";
         } catch (Exception $e) {
             return "Lỗi ngoại biên!";
         } finally {
@@ -366,6 +367,7 @@ class CcbsService
             $response = curl_exec($ch);
             $oked = $this->between($response, "var s1=\"", "\";");
 
+            if ($oked == "1") return "Thuê bao bị hủy";
             if ($oked != "0") return "Vui lòng đăng nhập lại!";
 
             $data = "OK";
@@ -456,7 +458,7 @@ class CcbsService
             $postData .= "xml=true".PHP_EOL;
 
             curl_setopt_array($ch, [
-                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getDoc.dwr",
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr",
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $postData,
                 CURLOPT_RETURNTRANSFER => true,

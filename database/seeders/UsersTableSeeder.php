@@ -14,8 +14,14 @@ class UsersTableSeeder extends Seeder
     public function run(): void
     {
         $data = [
-            'username' => 'admin',
-            'password' => bcrypt('Cnpt@2026'),
+            [
+                'username' => 'admin',
+                'password' => bcrypt('Cnpt@2026'),
+            ],
+            [
+                'username' => 'cnpt',
+                'password' => bcrypt('Cnpt@123456'),
+            ]
         ];
 
         User::truncate();
