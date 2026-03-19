@@ -11,16 +11,21 @@
                         <strong>Chức năng:</strong>
                     </div>
                 </div>
-                <div class="row mb-2">
+                <div class="row mb-2" id="chucNang">
                     <div class="col">
                         <div class="custom-control custom-checkbox custom-control-inline">
-                            <input type="checkbox" class="custom-control-input" name="doi_sim" id="doi_sim" checked>
+                            <input type="checkbox" class="custom-control-input" name="doi_sim" id="doi_sim">
                             <label class="custom-control-label" for="doi_sim">Đổi SIM</label>
                         </div>
 
                         <div class="custom-control custom-checkbox custom-control-inline">
-                            <input type="checkbox" class="custom-control-input" name="lay_qr" id="lay_qr" checked>
+                            <input type="checkbox" class="custom-control-input" name="lay_qr" id="lay_qr">
                             <label class="custom-control-label" for="lay_qr">Lấy mã QR ESIM</label>
+                        </div>
+
+                        <div class="custom-control custom-checkbox custom-control-inline">
+                            <input type="checkbox" class="custom-control-input" name="gui_sms" id="gui_sms">
+                            <label class="custom-control-label" for="gui_sms">Gửi SMS</label>
                         </div>
                     </div>
                 </div>
@@ -99,8 +104,9 @@
         "4006" : " Thuê bao không có trên hệ thống IN-Comv ", 
     };
 
-    let doi_sim = true;
-    let lay_qr = true;
+    let doi_sim = false;
+    let lay_qr = false;
+    let send_sms = false;
     let delay = {{ $delay ?? 1 }};
     let timeout;
     let lines = [];
@@ -108,11 +114,38 @@
     let total = 0;
 
     $(document).ready(function() {
+        function save_checkbox() {
+            const states = {};
+
+            $('#chucNang input[type="checkbox"]').each(function() {
+                states[$(this).attr('id')] = $(this).is(':checked');
+            });
+
+            localStorage.setItem('checkboxDoiSim', JSON.stringify(states));
+        }
+
+        function restore_checkbox() {
+            const saved = localStorage.getItem('checkboxDoiSim');
+            if (saved) {
+                const states = JSON.parse(saved);
+                $.each(states, function(id, checked) {
+                    $('#' + id).prop('checked', checked);
+                });
+            } else {
+                $('#chucNang input[type="checkbox"]').prop('checked', true);
+            }
+        }
+
+        restore_checkbox()
+
+        $('#chucNang input[type="checkbox"]').on('change', save_checkbox);
+
         $(document).on('click', '.btn-run', function() {
             let list = $('textarea[name="list"]').val();
 
             doi_sim = $('input[name="doi_sim"]').is(":checked");
             lay_qr = $('input[name="lay_qr"]').is(":checked");
+            send_sms = $('input[name="gui_sms"]').is(":checked");
 
             if (cookies == '') {
                 noty('Không có Cookie, đăng nhập lại để tiếp tục!', 'error');
@@ -192,9 +225,14 @@
                 block: 'end'
             });
 
-            if (doi_sim) await doisim(row, boline) && kh_gprs(row, boline) && lay_qr && await layqr(row, boline);
-            // if (doi_sim) await doisim(row, boline) && kh_gprs(row, boline) && gui_sms(row, boline) && lay_qr && await layqr(row, boline);
-            else if (lay_qr) await layqr(row, boline);
+            let ds_thanh_cong = doi_sim && await doisim(row, boline);
+
+            if (ds_thanh_cong) {
+                await kh_gprs(row, boline);
+                send_sms && await gui_sms(row, boline);
+            }
+
+            if (lay_qr && (ds_thanh_cong || !doi_sim)) await layqr(row, boline);
 
             if (index < total) timeout = setTimeout(chay, delay * 1000);
             else stop();
@@ -249,37 +287,6 @@
             gprs.text('Đang bật GPRS ...');
 
             try {
-                // let lay_gprs = await $.ajax({
-                //     type: 'POST',
-                //     url: "{{ route('lay-dvu.post') }}",
-                //     data: {
-                //         'sdt': '84'+sdt,
-                //         'dich_vu': 'GPRS',
-                //     },
-                // });
-
-                // if (!lay_gprs.includes('OK|')) {
-                //     gprs.text(lay_gprs);
-                //     return true;
-                // }
-
-                // let tach = lay_gprs.split("|");
-                // let checked = tach[1];
-
-                // if (checked != 0) {
-                //     gprs.text(checked > 0 ? 'THÀNH CÔNG!' : 'THẤT BẠI!');
-                //     return true;
-                // }
-
-                // let kh_gprs = await $.ajax({
-                //     type: 'POST',
-                //     url: "{{ route('dm-dvu.post') }}",
-                //     data: {
-                //         'sdt': '84'+sdt,
-                //         'dvu': 'GPRS',
-                //     },
-                // });
-
                 let kh_gprs = await $.ajax({
                     type: 'POST',
                     url: "{{ route('kich-hoat-gprs.post') }}",
@@ -287,11 +294,8 @@
                 });
 
                 gprs.text(kh_gprs);
-
-                return true;
             } catch (error) {
                 gprs.text('Lỗi ngoại biên!');
-                return false;
             }
         }
 
@@ -310,11 +314,8 @@
                 });
 
                 sms.text(gui_sms);
-
-                return true;
             } catch (error) {
                 sms.text('Lỗi ngoại biên!');
-                return false;
             }
         }
 

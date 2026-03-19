@@ -49,5 +49,11 @@ Route::middleware(['auth'])->group(function () {
 // });
 
 // Route::get('/test', [EsimController::class, 'test']);
-Route::get('/test-bn', [EsimController::class, 'testBrandName']);
-Route::get('/test-gprs', [EsimController::class, 'testGPRS']);
+// Route::get('/test-bn', [EsimController::class, 'testBrandName']);
+// Route::get('/test-session', function() {
+//     dd(session('cookies'));
+// });
+// Route::get('/clear', function() {
+//     session()->forget('cookies');
+//     return 'OK';
+// });

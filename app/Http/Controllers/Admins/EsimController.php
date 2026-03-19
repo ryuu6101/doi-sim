@@ -157,25 +157,21 @@ class EsimController extends Controller
     public function sendWelcomeMessage(Request $request) {
         $sdt = $request->input('sdt');
 
-        return $this->esimService->sendWelcomeMessage($sdt) ? 'THÀNH CÔNG' : 'THẤT BẠI';
+        return $this->esimService->sendWelcomeMessage($sdt)['success'] ? 'THÀNH CÔNG' : 'THẤT BẠI';
     }
 
     public function kichHoatGPRS(Request $request) {
         $sdt = $request->input('sdt');
 
-        return $this->esimService->kichHoatGPRS($sdt) ? 'THÀNH CÔNG' : 'THẤT BẠI';
+        return $this->esimService->kichHoatGPRS($sdt)['success'] ? 'THÀNH CÔNG' : 'THẤT BẠI';
     }
 
     public function test() {
-        return $this->ccbsService->test();
+        dd($this->kichHoatGPRS(request()->merge(['sdt' => '84842908947'])));
     }
 
     public function testBrandName() {
         $send = $this->brandNameService->sendWelcomeMessage('84918354555', ['918354555', today()->format('d/M/y'), '0918354555']);
         dd($send);
-    }
-
-    public function testGPRS() {
-        return $this->esimService->kichHoatGPRS('84842908947');
     }
 }

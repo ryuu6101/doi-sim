@@ -47,12 +47,39 @@ class EsimController extends Controller
             $data["message"] = $result;
         }
 
-        // if ($data['status'] != 'OK') return response()->json($data);
-
-        // $data['GPRS'] = (int)$this->esimService->kichHoatGPRS($sdt);
-        // $data['SMS'] = (int)$this->esimService->sendWelcomeMessage($sdt);
-
         return response()->json($data);
+    }
+
+    public function kichHoatGPRS(Request $request) {
+        $request->validate([
+            'sdt' => 'required|min:11',
+        ]);
+
+        $sdt = $request->input('sdt');
+
+        $result = $this->esimService->kichHoatGPRS($sdt);
+
+        // $data['status'] = $result['success'] ? 'OK' : 'ERR';
+
+        return response()->json($result);
+    }
+
+    public function sendWelcomeMesage(Request $request) {
+        $request->validate([
+            'sdt' => 'required|min:11',
+            'valid' => 'required',
+            // 'hotline' => 'required',
+        ]);
+
+        $sdt = $request->input('sdt');
+        $valid = $request->input('valid');
+        $hotline = $request->input('hotline') ?? '0918354555';
+
+        $result = $this->esimService->sendWelcomeMesage($sdt, $valid, $hotline);
+
+        // $data['status'] = $result ? 'OK' : 'ERR';
+
+        return response()->json($result);
     }
 
     public function layQr(Request $request) {

@@ -26,12 +26,7 @@ class CcbsServiceHttp
     protected $password = "";
     protected $cookies = "";
 
-    protected $client;
-    protected $timestamp;
-
     public function __construct() {
-        $this->timestamp = now()->getPreciseTimestamp(3);
-
         $loginFile = storage_path('app\Login.txt');
         if (file_exists($loginFile)) {
             $file = file_get_contents($loginFile);
@@ -40,14 +35,20 @@ class CcbsServiceHttp
             $this->password = $this->info[1] ?? "";
             $this->cookies = $this->info[2] ?? "";
         }
+    }
 
-        $agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.5790.102 Safari/537.36";
-        $this->client = Http::withHeaders([
+    public function timestamp() {
+        return now()->getPreciseTimestamp(3);
+    }
+
+    public function client() {
+        return Http::withHeaders([
             "Origin" => "http://10.159.22.104",
             "X-Requested-With" => "XMLHttpRequest",
             "Referer" => "http://10.159.22.104/ccbs/main",
             "Cookie" => $this->cookies,
-            "User-Agent" => $agent,
+            "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ".
+                            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.5790.102 Safari/537.36",
         ])->withOptions([
             'verify' => false,
             'allow_redirects' => false,
@@ -76,11 +77,11 @@ class CcbsServiceHttp
                 'options' => $c,
             ];
 
-            $headers = ['Referer' => 'http://10.159.22.104/ccbs/main?1iutlomLork=|otgiuxk5juoyosey'];
+            $headers = ['Referer' => 'http://10.159.22.104/ccbs/main?1iutlomLork=|otgiuxk5juoyosey', 'Cookie' => null];
 
             $url = "http://10.159.22.104/ccbs/main";
 
-            $response = $this->client->replaceHeaders($headers)->asForm()->post($url, $postData);
+            $response = $this->client()->replaceHeaders($headers)->asForm()->post($url, $postData);
             $result = $response->json();
 
             if ($result === false) {
@@ -94,6 +95,10 @@ class CcbsServiceHttp
                 $datacookie = implode('; ', ($cookies_arr));
                 
                 $this->getImage($datacookie);
+
+                $this->username = $username;
+                $this->password = $password;
+                $this->cookies = $datacookie;
                 
                 file_put_contents(storage_path("app\Login.txt"), $username . "\n" . $password . "\n" . $datacookie . "\n10.155.156.56");
 
@@ -118,17 +123,17 @@ class CcbsServiceHttp
     public function getImage($cookies) {
         try {
             $url = "http://10.159.22.104/ccbs/captcha/img.jsp?random=";
-            $this->client->replaceHeaders(['Cookie' => $cookies])->get($url);
+            $this->client()->replaceHeaders(['Cookie' => $cookies])->get($url);
         } catch (Exception $e) {}
     }
 
-    function getStringData($input, $paramName) {
+    public function getStringData($input, $paramName) {
         $data = $this->between($input, "s0['" . $paramName . "']=", ";");
         if ($data == null)  return null;
         return $this->between($input, "var " . $data . "=\"", "\";");
     }
 
-    function between($str, $start, $end) {
+    public function between($str, $start, $end) {
         $pattern = "/" . preg_quote($start, '/') . "(.*?)" . preg_quote($end, '/') . "/s";
         preg_match($pattern, $str, $matches);
         return $matches[1] ?? null; 
@@ -138,7 +143,7 @@ class CcbsServiceHttp
         $textData = "callCount=1".PHP_EOL;
         $textData .= "c0-scriptName=".$scriptName.PHP_EOL;
         $textData .= "c0-methodName=".$methodName.PHP_EOL;
-        $textData .= "c0-id=8974_".$this->timestamp.PHP_EOL;
+        $textData .= "c0-id=8974_".$this->timestamp().PHP_EOL;
         $textData .= "c0-param0=".$param0.PHP_EOL;
         $textData .= "c0-param1=boolean:false".PHP_EOL;
         $textData .= "xml=true".PHP_EOL;
@@ -154,7 +159,7 @@ class CcbsServiceHttp
 
             $url = "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getRec.dwr";
 
-            $response = $this->client->withBody($postData, 'text/plain')->post($url)->body();
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
             $KQ = $this->getStringData($response, "kqua_chk");
 
             if ($KQ != "0") return $this->thongbao[$KQ] ?? 'Vui lòng đăng nhập lại!';
@@ -165,7 +170,7 @@ class CcbsServiceHttp
 
                 $url = "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getValue.dwr";
 
-                $response = $this->client->withBody($postData, 'text/plain')->post($url)->body();
+                $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
                 $KQ = $this->getStringData($response, "kqua_chk");
                 $oked = $this->between($response, "var s0=\"", "\";");
 
@@ -185,9 +190,9 @@ class CcbsServiceHttp
             $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
 
             $url = "http://10.159.22.104/ccbs/main?";
-            $url .= "1iutlomLork=gjsot5pl{tizout&pl{tizout=neo.pttb_new.pttb.layTTThueBao_esim(%27$sdt%27)&_=".$this->timestamp;
+            $url .= "1iutlomLork=gjsot5pl{tizout&pl{tizout=neo.pttb_new.pttb.layTTThueBao_esim(%27$sdt%27)&_=".$this->timestamp();
 
-            $response = $this->client->get($url)->body();
+            $response = $this->client()->get($url)->body();
             $KQ = explode(',', $response);
 
             if (count($KQ) < 8) return "Vui lòng đăng nhập lại!";
@@ -210,7 +215,7 @@ class CcbsServiceHttp
             $url = "http://10.159.22.104/ccbs/main?";
             $url .= "1iutlomLork=vzzhetk}5zxgi{{ekyos5vnok{5otvnok{ekyos4px~sr&pxXkvuxzZ%7Fvk=1&wxiujk=$ma&hgxiujk=$bar";
             
-            return $this->client->get($url)->body();
+            return $this->client()->get($url)->body();
         } catch (Exception $e) {
             return false;
         }
@@ -223,7 +228,7 @@ class CcbsServiceHttp
 
             $url = "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getRec.dwr";
 
-            $response = $this->client->withBody($postData, 'text/plain')->post($url)->body();
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
             $kqua_chk = $this->getStringData($response, "kqua_chk");
             $ttin_add = $this->getStringData($response, "ttin_add");
 
@@ -247,7 +252,7 @@ class CcbsServiceHttp
 
             $url = "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getRec.dwr";
 
-            $response = $this->client->withBody($postData, 'text/plain')->post($url)->body();
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
             $oked = $this->between($response, "var s1=\"", "\";");
 
             if ($oked == "1") return "Thuê bao bị hủy";
@@ -274,7 +279,7 @@ class CcbsServiceHttp
 
             $url = "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getRec.dwr";
 
-            $response = $this->client->withBody($postData, 'text/plain')->post($url)->body();
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
             $ten_tb = $this->getStringData($response, "ten_tb");
 
             if ($ten_tb == null) return "Vui lòng đăng nhập lại!";
@@ -293,7 +298,7 @@ class CcbsServiceHttp
 
             $url = "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr";
 
-            $response = $this->client->withBody($postData, 'text/plain')->post($url)->body();
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
             $html = $this->between($response, "s0=\"", "\";");
 
             if ($html == "") return "Vui lòng đăng nhập lại!";
@@ -326,7 +331,7 @@ class CcbsServiceHttp
 
             $url = "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getValue.dwr";
 
-            $response = $this->client->withBody($postData, 'text/plain')->post($url)->body();
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
             $kqua = $this->between($response, "s0=\"", "\";");
 
             if ($kqua == 1) return "THÀNH CÔNG";
@@ -347,7 +352,7 @@ class CcbsServiceHttp
 
             $url = "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getRec.dwr";
 
-            $response = $this->client->withBody($postData, 'text/plain')->post($url)->body();
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
             $goi_di = $this->getStringData($response, "goi_di") ?? -1;
             $goi_den = $this->getStringData($response, "goi_den") ?? -1;
 
@@ -365,7 +370,7 @@ class CcbsServiceHttp
 
             $url = "http://10.159.22.104/ccbs/dwr/exec/NEORemoting.getValue.dwr";
 
-            $response = $this->client->withBody($postData, 'text/plain')->post($url)->body();
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
             $kqua = $this->between($response, "s0=\"", "\";");
 
             if ($kqua == '') return "Vui lòng đăng nhập lại";
@@ -384,7 +389,7 @@ class CcbsServiceHttp
 
             $url = "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr";
 
-            $response = $this->client->withBody($postData, 'text/plain')->post($url)->body();
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
             $html = $this->between($response, 'var s0="', '";');
 
             if (!isset($html) || $html == '') return 'Vui lòng đăng nhập lại!';

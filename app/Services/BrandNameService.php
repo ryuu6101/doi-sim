@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Http;
+
 class BrandNameService
 {
     protected $api_accounts = [
@@ -33,7 +35,8 @@ class BrandNameService
         $api_account = $this->api_accounts[4];
         $template_id = $this->template_ids[$template];
 
-        $url = "http://113.185.0.35:8888/smsbn/api";
+        // $url = "http://113.185.0.35:8888/smsbn/api";
+        $url = "http://123.31.36.151:8888/smsbn/api";
 
         $param_array = [];
 
@@ -65,25 +68,9 @@ class BrandNameService
             ]
         ];
 
-        // dd($data_array);
-
-        $data_string = json_encode($data_array);
-
-        $curl = curl_init($url);
-
-        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-            'Content-Type: application/json;charset=UTF-8',
-            'Content-Length: ' . strlen($data_string))
-        );
-
-        $result = curl_exec($curl);
-
-        curl_close($curl);
-
-        $response = json_decode($result, true);
+        $headers = ['Content-Type' => 'application/json;charset=UTF-8'];
+        $options = ['verify' => false];
+        $response = Http::withHeaders($headers)->withOptions($options)->post($url, $data_array)->json();
 
         // dd($response, $sdt, $data_array, $template_id);
 
