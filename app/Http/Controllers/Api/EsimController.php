@@ -64,7 +64,7 @@ class EsimController extends Controller
         return response()->json($result);
     }
 
-    public function sendWelcomeMesage(Request $request) {
+    public function sendWelcomeMessage(Request $request) {
         $request->validate([
             'sdt' => 'required|min:11',
             'valid' => 'required',
@@ -75,7 +75,7 @@ class EsimController extends Controller
         $valid = $request->input('valid');
         $hotline = $request->input('hotline') ?? '0918354555';
 
-        $result = $this->esimService->sendWelcomeMesage($sdt, $valid, $hotline);
+        $result = $this->esimService->sendWelcomeMessage($sdt, $valid, $hotline);
 
         // $data['status'] = $result ? 'OK' : 'ERR';
 

@@ -41,19 +41,5 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/lay-bc-esim', [EsimController::class, 'layBcEsim'])->name('lay-bc-esim.post');
     Route::post('/send-welcome-sms', [EsimController::class, 'sendWelcomeMessage'])->name('send-welcome-sms.post');
     Route::post('/kich-hoat-gprs', [EsimController::class, 'kichHoatGPRS'])->name('kich-hoat-gprs.post');
+    Route::post('/ktra-trung-tb', [EsimController::class, 'kiemTraTrungTB'])->name('ktra-trung-tb.post');
 });
-
-// Route::get('/test-job', function() {
-//     \App\Jobs\DisableSMT::dispatch('84842908947')->delay(now()->addMinute(2));
-//     return redirect()->back()->with('success', 'job added');
-// });
-
-// Route::get('/test', [EsimController::class, 'test']);
-// Route::get('/test-bn', [EsimController::class, 'testBrandName']);
-// Route::get('/test-session', function() {
-//     dd(session('cookies'));
-// });
-// Route::get('/clear', function() {
-//     session()->forget('cookies');
-//     return 'OK';
-// });

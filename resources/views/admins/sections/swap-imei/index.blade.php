@@ -19,7 +19,14 @@
                 </div>
                 <div class="row mb-2">
                     <div class="col-12 col-lg mb-2 mb-lg-0">
-                        <input type="text" name="ghichu" class="form-control border-dark" placeholder="Nhập ghi chú">
+                        <div class="row">
+                            <div class="col">
+                                <input type="text" name="ghichu" class="form-control border-dark" placeholder="Nhập ghi chú">
+                            </div>
+                            <div class="col-auto">
+                                <input type="text" name="hotline" class="form-control border-dark" placeholder="Nhập hotline">
+                            </div>
+                        </div>
                     </div>
                     <div class="col-lg-auto col-4">
                         <button class="btn btn-outline-success btn-block btn-run text-nowrap">
@@ -95,7 +102,21 @@
     let phones = [];
 
     $(document).ready(function() {
-        function save_checkbox() {
+        const saved_checkboxes = localStorage.getItem('checkboxDaoSim');
+        const saved_hotline = localStorage.getItem('hotline');
+
+        if (saved_checkboxes) {
+            const states = JSON.parse(saved_checkboxes);
+            $.each(states, function(id, checked) {
+                $('#' + id).prop('checked', checked);
+            });
+        } else {
+            $('#chucNang input[type="checkbox"]').prop('checked', true);
+        }
+
+        if (saved_hotline) $('input[name="hotline"]').val(saved_hotline);
+
+        $('#chucNang input[type="checkbox"]').on('change', function() {
             const states = {};
 
             $('#chucNang input[type="checkbox"]').each(function() {
@@ -103,24 +124,14 @@
             });
 
             localStorage.setItem('checkboxDaoSim', JSON.stringify(states));
-        }
+        });
 
-        function restore_checkbox() {
-            const saved = localStorage.getItem('checkboxDaoSim');
-            if (saved) {
-                const states = JSON.parse(saved);
-                $.each(states, function(id, checked) {
-                    $('#' + id).prop('checked', checked);
-                });
-            } else {
-                $('#chucNang input[type="checkbox"]').prop('checked', true);
-            }
-        }
+        $('input[name="hotline"]').on('input', function(e) {
+            localStorage.setItem('hotline', $(this).val());
+        });
+    });
 
-        restore_checkbox()
-
-        $('#chucNang input[type="checkbox"]').on('change', save_checkbox);
-
+    $(document).ready(function() {
         $(document).on('click', '.btn-run', function() {
             let list = $('textarea[name="list"]').val();
 
@@ -210,6 +221,7 @@
             let old_esim = boline[1] ?? '';
             let new_esim = boline[2] ?? '';
             let ghichu = boline[3] ?? $('input[name="ghichu"]').val() ?? '';
+            let hotline = $('input[name="hotline"]').val() ?? '-';
 
             let note = row.children().eq(4);
             let kqua = row.children().eq(5);
@@ -239,6 +251,17 @@
             phones.push(sdt);
 
             try {
+                let ktra_trung_tb = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('ktra-trung-tb.post') }}",
+                    data: {'sdt': '84'+sdt},
+                });
+
+                if (ktra_trung_tb) {
+                    kqua.text('Thuê bao đã được đảo sim trong ngày!');
+                    return;
+                }
+
                 kqua.text('Kiểm tra IMEI ...');
 
                 let lay_imei = await $.ajax({
@@ -300,13 +323,17 @@
                     },
                 });
 
-                if (doi_sim.includes("|vl")) {
-                    kqua.text(thongbaos[doi_sim.replace("|vl", "")] ?? "Lỗi khi đổi SIM cho thuê bao #404");
-                } else {
-                    kqua.text(doi_sim);
-                }
+                kqua.text(doi_sim['message']);
 
-                if (doi_sim != "1|vl" && doi_sim != "2|vl") return;
+                if (!doi_sim['success']) return;
+
+                // if (doi_sim.includes("|vl")) {
+                //     kqua.text(thongbaos[doi_sim.replace("|vl", "")] ?? "Lỗi khi đổi SIM cho thuê bao #404");
+                // } else {
+                //     kqua.text(doi_sim);
+                // }
+
+                // if (doi_sim != "1|vl" && doi_sim != "2|vl") return;
 
                 gprs.text('Đang bật GPRS ...');
 
@@ -324,7 +351,10 @@
                     let gui_sms = await $.ajax({
                         type: 'POST',
                         url: "{{ route('send-welcome-sms.post') }}",
-                        data: {'sdt': '84'+sdt},
+                        data: {
+                            'sdt': '84'+sdt,
+                            'hotline': hotline,
+                        },
                     });
     
                     sms.text(gui_sms);

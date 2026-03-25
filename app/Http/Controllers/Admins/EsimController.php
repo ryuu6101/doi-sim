@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admins;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\EsimHistories\EsimHistoryRepositoryInterface;
 use App\Repositories\EsimReports\EsimReportRepositoryInterface;
 use App\Services\BrandNameService;
 use App\Services\CcbsServiceWrapper;
@@ -19,6 +20,7 @@ class EsimController extends Controller
         protected BrandNameService $brandNameService,
         protected EsimService $esimService,
         protected EsimReportRepositoryInterface $esimReportRepos,
+        protected EsimHistoryRepositoryInterface $esimHistoryRepos,
     ) {}
 
     public function ccbsLogin(Request $request) {
@@ -39,7 +41,20 @@ class EsimController extends Controller
         $esim = $request->input('esim');
         $ghichu = urlencode($request->input('ghichu'));
 
-        return $this->ccbsService->doiSim($sdt, $esim, $ghichu);
+        // return $this->ccbsService->doiSim($sdt, $esim, $ghichu);
+        $doi_sim = $this->esimService->doiSim($sdt, $esim, $ghichu);
+
+        if ($doi_sim['success']) $this->esimHistoryRepos->create(['sdt' => '84'.$sdt, 'esim' => $esim, 'ghichu' => $ghichu]);
+
+        return $doi_sim;
+    }
+
+    public function kiemTraTrungTB(Request $request) {
+        $sdt = $request->input('sdt');
+
+        $this->esimHistoryRepos->deleteOld(today());
+
+        return !!$this->esimHistoryRepos->getByMobileNumber($sdt);
     }
 
     function layMaSim(Request $request) {
@@ -156,8 +171,9 @@ class EsimController extends Controller
 
     public function sendWelcomeMessage(Request $request) {
         $sdt = $request->input('sdt');
+        $hotline = $request->input('hotline') ?? '';
 
-        return $this->esimService->sendWelcomeMessage($sdt)['success'] ? 'THÀNH CÔNG' : 'THẤT BẠI';
+        return $this->esimService->sendWelcomeMessage(sdt: $sdt, hotline: $hotline)['success'] ? 'THÀNH CÔNG' : 'THẤT BẠI';
     }
 
     public function kichHoatGPRS(Request $request) {

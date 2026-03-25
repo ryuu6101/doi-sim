@@ -36,6 +36,12 @@
                     </div>
                 </div>
 
+                <div class="row mb-2">
+                    <div class="col">
+                        <input type="text" name="hotline" class="form-control border-dark" placeholder="Nhập hotline">
+                    </div>
+                </div>
+
                 <hr>
 
                 <div class="row mb-2">
@@ -114,7 +120,21 @@
     let total = 0;
 
     $(document).ready(function() {
-        function save_checkbox() {
+        const saved_checkboxes = localStorage.getItem('checkboxDoiSim');
+        const saved_hotline = localStorage.getItem('hotline');
+
+        if (saved_checkboxes) {
+            const states = JSON.parse(saved_checkboxes);
+            $.each(states, function(id, checked) {
+                $('#' + id).prop('checked', checked);
+            });
+        } else {
+            $('#chucNang input[type="checkbox"]').prop('checked', true);
+        }
+
+        if (saved_hotline) $('input[name="hotline"]').val(saved_hotline);
+
+        $('#chucNang input[type="checkbox"]').on('change', function() {
             const states = {};
 
             $('#chucNang input[type="checkbox"]').each(function() {
@@ -122,24 +142,14 @@
             });
 
             localStorage.setItem('checkboxDoiSim', JSON.stringify(states));
-        }
+        });
 
-        function restore_checkbox() {
-            const saved = localStorage.getItem('checkboxDoiSim');
-            if (saved) {
-                const states = JSON.parse(saved);
-                $.each(states, function(id, checked) {
-                    $('#' + id).prop('checked', checked);
-                });
-            } else {
-                $('#chucNang input[type="checkbox"]').prop('checked', true);
-            }
-        }
+        $('input[name="hotline"]').on('input', function(e) {
+            localStorage.setItem('hotline', $(this).val());
+        });
+    });
 
-        restore_checkbox()
-
-        $('#chucNang input[type="checkbox"]').on('change', save_checkbox);
-
+    $(document).ready(function() {
         $(document).on('click', '.btn-run', function() {
             let list = $('textarea[name="list"]').val();
 
@@ -251,9 +261,20 @@
                 return false;
             }
 
-            status.text('Bắt đầu đổi sim ...');
-
             try {
+                let ktra_trung_tb = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('ktra-trung-tb.post') }}",
+                    data: {'sdt': '84'+sdt},
+                });
+
+                if (ktra_trung_tb) {
+                    status.text('Thuê bao đã được đảo sim trong ngày!');
+                    return false;
+                }
+
+                status.text('Bắt đầu đổi sim ...');
+
                 let doi_sim = await $.ajax({
                     type: 'POST',
                     url: "{{ route('doi-sim.post') }}",
@@ -264,15 +285,19 @@
                     },
                 });
 
-                if (doi_sim.includes("|vl")) {
-                    status.text(thongbaos[doi_sim.replace("|vl", "")] ?? "Lỗi khi đổi SIM cho thuê bao #404");
-                } else {
-                    status.text(doi_sim);
-                }
+                status.text(doi_sim['message']);
 
-                if (doi_sim != "1|vl" && doi_sim != "2|vl") return false;
+                return doi_sim['success'];
 
-                return true;
+                // if (doi_sim.includes("|vl")) {
+                //     status.text(thongbaos[doi_sim.replace("|vl", "")] ?? "Lỗi khi đổi SIM cho thuê bao #404");
+                // } else {
+                //     status.text(doi_sim);
+                // }
+
+                // if (doi_sim != "1|vl" && doi_sim != "2|vl") return false;
+
+                // return true;
             } catch (error) {
                 status.text('Lỗi ngoại biên!');
                 return false;
@@ -301,6 +326,7 @@
 
         async function gui_sms(row, boline) {
             let sdt = boline[0];
+            let hotline = $('input[name="hotline"]').val() ?? '-';
 
             let sms = row.children().eq(6);
 
@@ -310,7 +336,10 @@
                 let gui_sms = await $.ajax({
                     type: 'POST',
                     url: "{{ route('send-welcome-sms.post') }}",
-                    data: {'sdt': '84'+sdt},
+                    data: {
+                        'sdt': '84'+sdt,
+                        'hotline': hotline,
+                    },
                 });
 
                 sms.text(gui_sms);
