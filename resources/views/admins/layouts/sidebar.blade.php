@@ -86,6 +86,13 @@
                 </li>
 
                 <li class="nav-item">
+                    <a href="{{ route('toggle-services.index') }}" class="nav-link">
+                        <i class="fa-solid fa-headset"></i>
+                        <span>Đóng mở các dịch vụ khác</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a href="{{ route('toggle-ioc.index') }}" class="nav-link">
                         <i class="fa-solid fa-phone-volume"></i>
                         <span>Cắt mở IOC</span>

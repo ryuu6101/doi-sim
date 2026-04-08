@@ -82,4 +82,8 @@ class SectionController extends Controller
         return view('admins.sections.esim-report.statistical.index', 
                 compact('esim_reports', 'service_codes', 'actions', 'sub_types', 'accounts'));
     }
+
+    public function toggleServices() {
+        return view('admins.sections.toggle-services.index');
+    }
 }

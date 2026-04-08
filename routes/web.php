@@ -23,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/toggle-smt-smo', [SectionController::class, 'toggleSmtSmo'])->name('toggle-smt-smo.index');
     Route::get('/esim-report/import', [SectionController::class, 'importEsimReport'])->name('esim-report.import.index');
     Route::get('/esim-report/statistical', [SectionController::class, 'listEsimReport'])->name('esim-report.statistical.index');
+    Route::get('/toggle-services', [SectionController::class, 'toggleServices'])->name('toggle-services.index');
     
     Route::post('/ccbs-login', [EsimController::class, 'ccbsLogin'])->name('ccbs-login.post');
     Route::post('/doi-sim', [EsimController::class, 'doiSim'])->name('doi-sim.post');
