@@ -94,4 +94,28 @@ class CcbsServiceWrapper
             fn() => $this->ccbsService->layBcEsim($date)
         );
     }
+
+    public function layLsTBao($sdt) {
+        return $this->withLoginRetry(
+            fn() => $this->ccbsService->layLsTBao($sdt)
+        );
+    }
+
+    public function layLs3g($sdt) {
+        return $this->withLoginRetry(
+            fn() => $this->ccbsService->layLs3g($sdt)
+        );
+    }
+
+    public function docDvuTb($sdt) {
+        return $this->withLoginRetry(
+            fn() => $this->ccbsService->docDvuTb($sdt)
+        );
+    }
+
+    public function layTTKhTb($sdt, $matinh, $string_data) {
+        return $this->withLoginRetry(
+            fn() => $this->ccbsService->layTTKhTb($sdt, $matinh, $string_data)
+        );
+    }
 }

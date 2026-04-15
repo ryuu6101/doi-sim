@@ -23,6 +23,9 @@
                 </div>
                 <div class="row">
                     <div class="col text-right">
+                        <button class="btn btn-outline-primary btn-select-all-services text-nowrap">
+                            CHỌN TẤT CẢ
+                        </button>
                         <button class="btn btn-outline-danger btn-services-clear text-nowrap">
                             <i class="fa-solid fa-trash mr-1"></i>XÓA
                         </button>
@@ -134,6 +137,11 @@
         });
 
         if (saved_selected_services) $('[name="services"]').val(JSON.parse(saved_selected_services)).trigger('change');
+
+        $('.btn-select-all-services').on('click', function () { 
+            $('[name="services"] > option').prop("selected", "selected");
+            $('[name="services"]').trigger("change");
+        });
 
         $('.btn-services-clear').on('click', function () { 
             $('[name="services"]').val(null).trigger('change'); 

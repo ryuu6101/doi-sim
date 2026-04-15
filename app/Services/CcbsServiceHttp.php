@@ -419,4 +419,152 @@ class CcbsServiceHttp
             return "Lỗi ngoại biên!";
         }
     }
+
+    public function layLsTBao($sdt) {
+        try {
+            $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
+            $param0 = "string:neo.cmdv114.vinanv.docLsTb('$sdt'%2C'1'%2C'30')";
+            $postData = $this->getTextData('DataRemoting', 'getDoc', $param0);
+
+            $url = "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr";
+
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
+            $html = $this->between($response, 'var s0="', '";');
+            // dd($html);
+
+            if (!isset($html) || $html == '') return 'Vui lòng đăng nhập lại!';
+
+            $encodedHtml = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8");
+
+            $dom = new DOMDocument();
+            @$dom->loadHTML('<?xml encoding="UTF-8">' . $html);
+
+            $xpath = new DOMXPath($dom);
+            $rows = $xpath->query('//table//tr[position()>1]');
+
+            $datas = [];
+            foreach ($rows as $row) {
+                $rowData = [];
+                $cells = $xpath->query('td//font', $row);
+                
+                foreach ($cells as $cell) {
+                    $rowData[] = trim(($cell->nodeValue));
+                }
+
+                $datas[] = $rowData;
+            }
+
+            return $datas;
+        } catch (Exception $e) {
+            return "Lỗi ngoại biên!";
+        }
+    }
+
+    public function layLs3g($sdt) {
+        try {
+            $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
+            $param0 = "string:neo.tg.doc_lichsu_3g('$sdt')";
+            $postData = $this->getTextData('DataRemoting', 'getDoc', $param0);
+
+            $url = "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr";
+
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
+            $html = $this->between($response, 'var s0="', '";');
+            // dd($html);
+
+            if (!isset($html) || $html == '') return 'Vui lòng đăng nhập lại!';
+
+            $encodedHtml = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8");
+
+            $dom = new DOMDocument();
+            @$dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+            $xpath = new DOMXPath($dom);
+            $rows = $xpath->query('//table[@class="secContent"]//tr[position()>1]');
+
+            $datas = [];
+            foreach ($rows as $row) {
+                $rowData = [];
+                $cells = $row->getElementsByTagName('td');
+
+                foreach ($cells as $cell) {
+                    $rowData[] = trim(($cell->nodeValue));
+                }
+
+                $datas[] = $rowData;
+            }
+
+            return $datas;
+        } catch (Exception $e) {
+            return "Lỗi ngoại biên!";
+        }
+    }
+
+    public function docDvuTb($sdt) {
+        try {
+            $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
+            $param0 = "string:neo.cmdv114.vinanv.docDvuTb('$sdt')";
+            $postData = $this->getTextData('DataRemoting', 'getDoc', $param0);
+
+            $url = "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr";
+
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
+            $html = $this->between($response, 'var s0="', '";');
+            // dd($html);
+
+            if (!isset($html) || $html == '') return 'Vui lòng đăng nhập lại!';
+
+            $encodedHtml = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8");
+
+            $dom = new DOMDocument();
+            @$dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+            $xpath = new DOMXPath($dom);
+            $rows = $xpath->query('//table//tr');
+
+            $datas = [];
+            foreach ($rows as $row) {
+                $rowData = [];
+                $cells = $row->getElementsByTagName('td');
+
+                foreach ($cells as $cell) {
+                    $rowData[] = trim(($cell->nodeValue));
+                }
+
+                $datas[] = $rowData;
+            }
+
+            return $datas;
+        } catch (Exception $e) {
+            return "Lỗi ngoại biên!";
+        } finally {
+            curl_close($ch);
+        }
+    }
+
+    public function layTTKhTb($sdt, $matinh, $string_data) {        
+        try {
+            $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
+            $param0 = "string:neo.cmdv114.vinacore.layTTKhTb('$sdt'%2C'$matinh')";
+            $postData = $this->getTextData('DataRemoting', 'getDoc', $param0);
+
+            $url = "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr";
+
+            $response = $this->client()->withBody($postData, 'text/plain')->post($url)->body();
+
+            $oked = $this->between($response, "var s0=", ";");
+
+            if ($oked == 'null') return "Vui lòng đăng nhập lại!";
+
+            $data = "OK";
+            $string_data = is_string($string_data) ? [$string_data] : $string_data;
+            foreach ($string_data as $key => $value) {
+                $data .= "|".html_entity_decode($this->getStringData($response, $value));
+            }
+
+            return $data;
+        } catch (Exception $e) {
+            return "Lỗi ngoại biên!";
+        }
+    }
 }

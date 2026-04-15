@@ -2,7 +2,7 @@
 
 namespace App\Filters;
 
-class _SampleFilter extends QueryFilter
+class EsimHistoryFilterFilter extends QueryFilter
 {
     protected $filterable = [
         'sdt',

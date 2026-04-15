@@ -86,4 +86,8 @@ class SectionController extends Controller
     public function toggleServices() {
         return view('admins.sections.toggle-services.index');
     }
+
+    public function subscriberCheck() {
+        return view('admins.sections.subscriber-check.index');
+    }
 }

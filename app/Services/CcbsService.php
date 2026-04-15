@@ -671,29 +671,23 @@ class CcbsService
         }
     }
 
-    public function test() {
+    public function layLsTBao($sdt) {
         $ch = curl_init();
 
         try {
+            $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
             $timestamp = now()->getPreciseTimestamp(3);
 
-            $scriptName = 'DataRemoting';
-            $methodName = 'getDoc';
-
             $postData = "callCount=1".PHP_EOL;
-            $postData .= "c0-scriptName=".$scriptName.PHP_EOL;
-            $postData .= "c0-methodName=".$methodName.PHP_EOL;
+            $postData .= "c0-scriptName=DataRemoting".PHP_EOL;
+            $postData .= "c0-methodName=getDoc".PHP_EOL;
             $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
-            // $postData .= "c0-param0=string:neo.cmdv114.catmo_ioc.checkVSCC(%2284845674221%22%2C%22VNPT%20VSCC%22)".PHP_EOL;
-            // $postData .= "c0-param0=string:neo.cmdv114.vinacore_new.layTTThueBao_v5('84845674221'%2C'0')".PHP_EOL;
-            // $postData .= "c0-param0=string:neo.cmdv114.vinanv_4G.catmoICOC('0'%2C'0'%2C'1'%2C'84845674221'%2C'%3B'%2C''%2C'cuongpp_dng')"
-            //              .PHP_EOL;
-            $postData .= "c0-param0=string:neo.cmdv114.vinanv.docBctkSIM_(%2208%2F02%2F2026%22%2C%22admin_dng%22%2C%22all%22)".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinanv.docLsTb('".$sdt."'%2C'1'%2C'30')".PHP_EOL;
             $postData .= "c0-param1=boolean:false".PHP_EOL;
             $postData .= "xml=true".PHP_EOL;
 
             curl_setopt_array($ch, [
-                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/".$scriptName.".".$methodName.".dwr",
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr",
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $postData,
                 CURLOPT_RETURNTRANSFER => true,
@@ -703,46 +697,209 @@ class CcbsService
             ]);
 
             $response = curl_exec($ch);
-            // dd($response);
             $html = $this->between($response, 'var s0="', '";');
             // dd($html);
 
-            $decodedHtml = html_entity_decode($html, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-            // dd($html, $decodedHtml);
+            if (!isset($html) || $html == '') return 'Vui lòng đăng nhập lại!';
 
-            $decodedHtml = preg_replace_callback('/\\\\u([0-9a-fA-F]{4})/', function ($matches) {
-                return mb_convert_encoding(pack('H*', $matches[1]), 'UTF-8', 'UCS-2BE');
-            }, $decodedHtml);
-            
-            // $decodedHtml = str_replace(['\\', "<font size='2'>"], '', $decodedHtml);
-            $decodedHtml = str_replace(['\\n', '\\'], '', $decodedHtml);
-            // dd($decodedHtml);
-
-            $encodedHtml = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8"); 
+            $encodedHtml = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8");
 
             $dom = new DOMDocument();
-            @$dom->loadHTML($encodedHtml);
-            // dd($dom);
+            @$dom->loadHTML('<?xml encoding="UTF-8">' . $html);
 
             $xpath = new DOMXPath($dom);
+            $rows = $xpath->query('//table//tr[position()>1]');
 
-            $rows = $xpath->query("//*[contains(@class, 'row0')]");
-            // dd($rows->item(0)->childNodes);
+            // dd($dom);
+
             $datas = [];
             foreach ($rows as $row) {
                 $rowData = [];
-                $cells = $row->getElementsByTagName('td');
+                $cells = $xpath->query('td//font', $row);
                 
                 foreach ($cells as $cell) {
-                    $rowData[] = trim($cell->nodeValue);
+                    $rowData[] = trim(($cell->nodeValue));
                 }
 
                 $datas[] = $rowData;
             }
-            dd($datas);
+
+            // dd($datas, $dom);
+
+            return $datas;
         } catch (Exception $e) {
-            throw $e;
-            return "Vui lòng đăng nhập lại!";
+            return "Lỗi ngoại biên!";
+        } finally {
+            curl_close($ch);
+        }
+    }
+
+    public function layLs3g($sdt) {
+        $ch = curl_init();
+
+        try {
+            $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
+            $timestamp = now()->getPreciseTimestamp(3);
+
+            $postData = "callCount=1".PHP_EOL;
+            $postData .= "c0-scriptName=DataRemoting".PHP_EOL;
+            $postData .= "c0-methodName=getDoc".PHP_EOL;
+            $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
+            $postData .= "c0-param0=string:neo.tg.doc_lichsu_3g('".$sdt."')".PHP_EOL;
+            $postData .= "c0-param1=boolean:false".PHP_EOL;
+            $postData .= "xml=true".PHP_EOL;
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
+                CURLOPT_HTTPHEADER => $this->httpHeader
+            ]);
+
+            $response = curl_exec($ch);
+            $html = $this->between($response, 'var s0="', '";');
+            // dd($html);
+
+            if (!isset($html) || $html == '') return 'Vui lòng đăng nhập lại!';
+
+            $encodedHtml = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8");
+
+            $dom = new DOMDocument();
+            @$dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+            $xpath = new DOMXPath($dom);
+            $rows = $xpath->query('//table[@class="secContent"]//tr[position()>1]');
+
+            // dd($dom);
+
+            $datas = [];
+            foreach ($rows as $row) {
+                $rowData = [];
+                $cells = $row->getElementsByTagName('td');
+
+                foreach ($cells as $cell) {
+                    $rowData[] = trim(($cell->nodeValue));
+                }
+
+                $datas[] = $rowData;
+            }
+
+            // dd($datas, $dom);
+
+            return $datas;
+        } catch (Exception $e) {
+            return "Lỗi ngoại biên!";
+        } finally {
+            curl_close($ch);
+        }
+    }
+
+    public function docDvuTb($sdt) {
+        $ch = curl_init();
+
+        try {
+            $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
+            $timestamp = now()->getPreciseTimestamp(3);
+
+            $postData = "callCount=1".PHP_EOL;
+            $postData .= "c0-scriptName=DataRemoting".PHP_EOL;
+            $postData .= "c0-methodName=getDoc".PHP_EOL;
+            $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinanv.docDvuTb('".$sdt."')".PHP_EOL;
+            $postData .= "c0-param1=boolean:false".PHP_EOL;
+            $postData .= "xml=true".PHP_EOL;
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getDoc.dwr",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
+                CURLOPT_HTTPHEADER => $this->httpHeader
+            ]);
+
+            $response = curl_exec($ch);
+            $html = $this->between($response, 'var s0="', '";');
+            // dd($html);
+
+            if (!isset($html) || $html == '') return 'Vui lòng đăng nhập lại!';
+
+            $encodedHtml = mb_convert_encoding($html, 'HTML-ENTITIES', "UTF-8");
+
+            $dom = new DOMDocument();
+            @$dom->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+            $xpath = new DOMXPath($dom);
+            $rows = $xpath->query('//table//tr');
+
+            // dd($dom);
+
+            $datas = [];
+            foreach ($rows as $row) {
+                $rowData = [];
+                $cells = $row->getElementsByTagName('td');
+
+                foreach ($cells as $cell) {
+                    $rowData[] = trim(($cell->nodeValue));
+                }
+
+                $datas[] = $rowData;
+            }
+
+            // dd($datas, $dom);
+
+            return $datas;
+        } catch (Exception $e) {
+            return "Lỗi ngoại biên!";
+        } finally {
+            curl_close($ch);
+        }
+    }
+
+    public function layTTKhTb($sdt, $matinh, $string_data) {        
+        $ch = curl_init();
+
+        try {
+            $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
+            $timestamp = now()->getPreciseTimestamp(3);
+
+            $postData = "callCount=1".PHP_EOL;
+            $postData .= "c0-scriptName=DataRemoting".PHP_EOL;
+            $postData .= "c0-methodName=getRec".PHP_EOL;
+            $postData .= "c0-id=8974_".$timestamp."".PHP_EOL;
+            $postData .= "c0-param0=string:neo.cmdv114.vinacore.layTTKhTb('".$sdt."'%2C'".$matinh."')".PHP_EOL;
+            $postData .= "c0-param1=boolean:false".PHP_EOL;
+            $postData .= "xml=true".PHP_EOL;
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://10.159.22.104/ccbs/dwr/exec/DataRemoting.getRec.dwr",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_COOKIEJAR => storage_path('app\cookies.txt'),
+                CURLOPT_COOKIEFILE => storage_path('app\cookies.txt'),
+                CURLOPT_HTTPHEADER => $this->httpHeader
+            ]);
+
+            $response = curl_exec($ch);
+
+            $oked = $this->between($response, "var s0=", ";");
+
+            if ($oked == 'null') return "Vui lòng đăng nhập lại!";
+
+            $data = "OK";
+            $string_data = is_string($string_data) ? [$string_data] : $string_data;
+            foreach ($string_data as $key => $value) {
+                $data .= "|".html_entity_decode($this->getStringData($response, $value));
+            }
+
+            return $data;
+        } catch (Exception $e) {
+            return "Lỗi ngoại biên!";
         } finally {
             curl_close($ch);
         }

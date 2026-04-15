@@ -24,6 +24,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/esim-report/import', [SectionController::class, 'importEsimReport'])->name('esim-report.import.index');
     Route::get('/esim-report/statistical', [SectionController::class, 'listEsimReport'])->name('esim-report.statistical.index');
     Route::get('/toggle-services', [SectionController::class, 'toggleServices'])->name('toggle-services.index');
+    Route::get('/subscriber-check', [SectionController::class, 'subscriberCheck'])->name('subscriber-check.index');
     
     Route::post('/ccbs-login', [EsimController::class, 'ccbsLogin'])->name('ccbs-login.post');
     Route::post('/doi-sim', [EsimController::class, 'doiSim'])->name('doi-sim.post');
@@ -43,4 +44,5 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/send-welcome-sms', [EsimController::class, 'sendWelcomeMessage'])->name('send-welcome-sms.post');
     Route::post('/kich-hoat-gprs', [EsimController::class, 'kichHoatGPRS'])->name('kich-hoat-gprs.post');
     Route::post('/ktra-trung-tb', [EsimController::class, 'kiemTraTrungTB'])->name('ktra-trung-tb.post');
+    Route::post('/kiem-tra-tttb', [EsimController::class, 'kiemTraTTTBao'])->name('kiem-tra-tttb.post');
 });

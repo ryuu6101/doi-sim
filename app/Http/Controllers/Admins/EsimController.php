@@ -182,12 +182,41 @@ class EsimController extends Controller
         return $this->esimService->kichHoatGPRS($sdt)['success'] ? 'THÀNH CÔNG' : 'THẤT BẠI';
     }
 
-    public function test() {
-        dd($this->kichHoatGPRS(request()->merge(['sdt' => '84842908947'])));
-    }
+    public function kiemTraTTTBao(Request $request) {
+        $sdt = $request->input('sdt');
+        $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
 
-    public function testBrandName() {
-        $send = $this->brandNameService->sendWelcomeMessage('84918354555', ['918354555', today()->format('d/M/y'), '0918354555']);
-        dd($send);
+        $tttb_string_data = ['so_tb', 'esim', 'so_msin', 'goi_di', 'goi_den', 'loai_tb', 'ma_tinh', 'ngay_kh', 'pin', 'puk', 'pin2', 'puk2'];
+        $ttkh_string_data = ['ngay_sinh', 'phai', 'so_gt', 'ngaycap_gt', 'doituong', 'ten_tb', 'ten_kh', 'diachi_chungtu', 
+                                'diachi_thuongtru', 'diachi'];
+
+        $lay_tttb = $this->ccbsService->layTTThueBaoV4($sdt, $tttb_string_data);
+
+        if (str_contains($lay_tttb, 'OK|')) {
+            $tttb_splited = explode('|', $lay_tttb);
+            unset($tttb_splited[0]);
+            $tttb = array_combine($tttb_string_data, $tttb_splited);
+
+            $lay_ttkh = $this->ccbsService->layTTKhTb($sdt, $tttb['ma_tinh'], $ttkh_string_data);
+            if (!str_contains($lay_ttkh, 'OK|')) $ttkh = [];
+    
+            $ttkh_splited = explode('|', $lay_ttkh);
+            unset($ttkh_splited[0]);
+            $ttkh = array_combine($ttkh_string_data, $ttkh_splited);
+        } else {
+            $tttb = [];
+            $ttkh = [];
+        }
+
+        $dvu_tb = $this->ccbsService->docDvuTb($sdt);
+        if (is_string($dvu_tb)) return;
+
+        $ls_tb = $this->ccbsService->layLsTBao($sdt);
+        if (is_string($ls_tb)) return;
+
+        $ls_3g = $this->ccbsService->layLs3g($sdt);
+        if (is_string($ls_3g)) return;
+
+        return view('admins.sections.subscriber-check.mobile-info', compact('tttb', 'ttkh', 'dvu_tb', 'ls_tb', 'ls_3g'));
     }
 }

@@ -115,6 +115,13 @@
                     </ul>
                 </li>
 
+                <li class="nav-item">
+                    <a href="{{ route('subscriber-check.index') }}" class="nav-link">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Tra cứu thông tin thuê bao</span>
+                    </a>
+                </li>
+
             </ul>
         </div>
         <!-- /main navigation -->
