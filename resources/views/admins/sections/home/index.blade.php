@@ -3,7 +3,7 @@
 @section('content')
 <div class="row flex-lg-nowrap align-items-start">
 
-    <div class="col-lg-auto col-12 mb-2">
+    <div class="col-lg-3 col-12 mb-2">
         <div class="card">
             <div class="card-body">
                 <div class="row mb-2">
@@ -12,20 +12,28 @@
                     </div>
                 </div>
                 <div class="row mb-2" id="chucNang">
-                    <div class="col">
+                    <div class="col-auto mb-2">
                         <div class="custom-control custom-checkbox custom-control-inline">
                             <input type="checkbox" class="custom-control-input" name="doi_sim" id="doi_sim">
                             <label class="custom-control-label" for="doi_sim">Đổi SIM</label>
                         </div>
-
+                    </div>
+                    <div class="col-auto mb-2">
                         <div class="custom-control custom-checkbox custom-control-inline">
                             <input type="checkbox" class="custom-control-input" name="lay_qr" id="lay_qr">
                             <label class="custom-control-label" for="lay_qr">Lấy mã QR ESIM</label>
                         </div>
-
+                    </div>
+                    <div class="col-auto mb-2">
                         <div class="custom-control custom-checkbox custom-control-inline">
                             <input type="checkbox" class="custom-control-input" name="gui_sms" id="gui_sms">
                             <label class="custom-control-label" for="gui_sms">Gửi SMS</label>
+                        </div>
+                    </div>
+                    <div class="col-auto mb-2">
+                        <div class="custom-control custom-checkbox custom-control-inline">
+                            <input type="checkbox" class="custom-control-input" name="cho_phep_dao_lai" id="cho_phep_dao_lai">
+                            <label class="custom-control-label" for="cho_phep_dao_lai">Cho phép đảo lại</label>
                         </div>
                     </div>
                 </div>
@@ -113,6 +121,7 @@
     let doi_sim = false;
     let lay_qr = false;
     let send_sms = false;
+    let ignore_overlap = false;
     let delay = {{ $delay ?? 1 }};
     let timeout;
     let lines = [];
@@ -156,6 +165,7 @@
             doi_sim = $('input[name="doi_sim"]').is(":checked");
             lay_qr = $('input[name="lay_qr"]').is(":checked");
             send_sms = $('input[name="gui_sms"]').is(":checked");
+            ignore_overlap = $('input[name="cho_phep_dao_lai"]').is(":checked");
 
             if (cookies == '') {
                 noty('Không có Cookie, đăng nhập lại để tiếp tục!', 'error');
@@ -262,15 +272,17 @@
             }
 
             try {
-                let ktra_trung_tb = await $.ajax({
-                    type: 'POST',
-                    url: "{{ route('ktra-trung-tb.post') }}",
-                    data: {'sdt': '84'+sdt},
-                });
-
-                if (ktra_trung_tb) {
-                    status.text('Thuê bao đã được đảo sim trong ngày!');
-                    return false;
+                if (!ignore_overlap) {
+                    let ktra_trung_tb = await $.ajax({
+                        type: 'POST',
+                        url: "{{ route('ktra-trung-tb.post') }}",
+                        data: {'sdt': '84'+sdt},
+                    });
+    
+                    if (ktra_trung_tb) {
+                        status.text('Thuê bao đã được đảo sim trong ngày!');
+                        return false;
+                    }
                 }
 
                 status.text('Bắt đầu đổi sim ...');
