@@ -41,6 +41,8 @@
                         <th class="text-center">Số thuê bao</th>
                         <th class="text-center">Số IMEI</th>
                         <th class="text-center">Chủ thuê bao</th>
+                        <th class="text-center">Người đảo gần nhất</th>
+                        <th class="text-center">Ngày đảo gần nhất</th>
                     </tr>
                 </thead>
                 <tbody id="progress_list">
@@ -113,6 +115,8 @@
             row.append($('<td>' + (line ?? '') + '</td>'));
             row.append($('<td></td>'));
             row.append($('<td></td>'));
+            row.append($('<td></td>'));
+            row.append($('<td></td>'));
 
             $('#progress_list').append(row);
 
@@ -123,6 +127,7 @@
 
             let matinh = await layIMEI(row, line);
             matinh && await layTTKhTb(row, line, matinh);
+            await layLSuTBao(row, line);
 
             if (index < total) timeout = setTimeout(chay, delay * 1000);
             else stop();
@@ -175,6 +180,29 @@
                 cell.text(result);
             } catch (error) {
                 cell.text('Lỗi ngoại biên!');
+            }
+        }
+
+        async function layLSuTBao(row, sdt) {
+            let nguoi_thuc_hien = row.children().eq(4);
+            let ngay_thuc_hien = row.children().eq(5);
+
+            nguoi_thuc_hien.text('Đang tìm kiếm ...');
+
+            try {
+                let result = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('lay-lsu-tbao.post') }}",
+                    data: {'sdt': sdt},
+                });
+
+                let lsu_gan_nhat = result[0] ?? [];
+
+                nguoi_thuc_hien.text(lsu_gan_nhat[4] ?? '-');
+                ngay_thuc_hien.text(lsu_gan_nhat[0] ?? '-');
+            } catch (error) {
+                nguoi_thuc_hien.text('Lỗi ngoại biên!');
+                ngay_thuc_hien.text('Lỗi ngoại biên!');
             }
         }
 

@@ -45,4 +45,5 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/kich-hoat-gprs', [EsimController::class, 'kichHoatGPRS'])->name('kich-hoat-gprs.post');
     Route::post('/ktra-trung-tb', [EsimController::class, 'kiemTraTrungTB'])->name('ktra-trung-tb.post');
     Route::post('/kiem-tra-tttb', [EsimController::class, 'kiemTraTTTBao'])->name('kiem-tra-tttb.post');
+    Route::post('/lay-lsu-tbao', [EsimController::class, 'layLSuTBao'])->name('lay-lsu-tbao.post');
 });

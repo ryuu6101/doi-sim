@@ -219,4 +219,12 @@ class EsimController extends Controller
 
         return view('admins.sections.subscriber-check.mobile-info', compact('tttb', 'ttkh', 'dvu_tb', 'ls_tb', 'ls_3g'));
     }
+
+    public function layLSuTBao(Request $request) {
+        $sdt = $request->input('sdt');
+        $sdt = strlen($sdt) < 11 ? '84'.$sdt : $sdt;
+
+        $ls_tb = $this->ccbsService->layLsTBao($sdt);
+        return is_array($ls_tb) ? $ls_tb : [];
+    }
 }

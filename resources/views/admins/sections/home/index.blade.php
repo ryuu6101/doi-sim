@@ -209,16 +209,23 @@
             let boline = [];
             let slice_pos = 0;
 
-            tach.forEach((value, index, self) => {
-                if (value.length == 9) boline[0] = value;
-                else if (value.length == 10) boline[1] = value;
-                else if (value.length == 20) boline[1] = value.slice(9, 19);
+            // tach.forEach((value, index, self) => {
+            //     if (value.length == 9) boline[0] = value;
+            //     else if (value.length == 10) boline[1] = value;
+            //     else if (value.length == 20) boline[1] = value.slice(9, 19);
 
-                if (index + 1 == self.length) slice_pos = string.indexOf(value) + value.length;
-            });
+            //     if (index + 1 == self.length) slice_pos = string.indexOf(value) + value.length;
+            // });
 
+            // let ghichu = string.slice(slice_pos).trim();
+            // if (ghichu != '' && !string.includes('母卡')) boline[2] = ghichu;
+
+            boline = tach.map((value, index) => (value.length == 20) ? value.slice(9, 19) : value);
+
+            let last_string = boline[1] ?? boline[0] ?? '';
+            slice_pos = string.indexOf(last_string) + last_string.length;
             let ghichu = string.slice(slice_pos).trim();
-            if (ghichu != '' && !string.includes('母卡')) boline[2] = ghichu;
+            if (ghichu != '') boline[2] = ghichu;
 
             return boline;
         }
