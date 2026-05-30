@@ -109,7 +109,7 @@
 
             lines = list.split("\n").filter((line) => {return line != ""}).map((line) => {
                 line = line.trim();
-                if (line.length > 9) return line.slice(-9);
+                if (line.length > 10) return line.slice(2);
                 return line;
             });
             index = 0;

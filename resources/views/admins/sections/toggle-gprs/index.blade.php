@@ -96,8 +96,6 @@
     let phones = [];
 
     $(document).ready(function() {
-        // $('.sidebar.sidebar-main').addClass("sidebar-main-resized");
-
         $(document).on('click', '.btn-run', function() {
             let list = $('textarea[name="list"]').val();
 
@@ -214,7 +212,7 @@
                     return false;
                 }
 
-                mobile = tach[1].slice(-9);
+                mobile = tach[1].slice(2);
 
                 sdt.text(mobile);
 

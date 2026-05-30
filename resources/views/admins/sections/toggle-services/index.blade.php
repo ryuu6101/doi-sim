@@ -284,7 +284,7 @@
                     return false;
                 }
 
-                mobile = tach[1].slice(-9);
+                mobile = tach[1].slice(2);
 
                 sdt.text(mobile);
 

@@ -209,17 +209,6 @@
             let boline = [];
             let slice_pos = 0;
 
-            // tach.forEach((value, index, self) => {
-            //     if (value.length == 9) boline[0] = value;
-            //     else if (value.length == 10) boline[1] = value;
-            //     else if (value.length == 20) boline[1] = value.slice(9, 19);
-
-            //     if (index + 1 == self.length) slice_pos = string.indexOf(value) + value.length;
-            // });
-
-            // let ghichu = string.slice(slice_pos).trim();
-            // if (ghichu != '' && !string.includes('母卡')) boline[2] = ghichu;
-
             boline = tach.map((value, index) => (value.length == 20) ? value.slice(9, 19) : value);
 
             let last_string = boline[1] ?? boline[0] ?? '';
@@ -231,7 +220,6 @@
         }
 
         async function chay() {
-            // let boline = lines[index++].split(/[\t|]/);
             let boline = xulyChuoi(lines[index++]);
             let row = $('<tr></tr>');
 
@@ -307,16 +295,6 @@
                 status.text(doi_sim['message']);
 
                 return doi_sim['success'];
-
-                // if (doi_sim.includes("|vl")) {
-                //     status.text(thongbaos[doi_sim.replace("|vl", "")] ?? "Lỗi khi đổi SIM cho thuê bao #404");
-                // } else {
-                //     status.text(doi_sim);
-                // }
-
-                // if (doi_sim != "1|vl" && doi_sim != "2|vl") return false;
-
-                // return true;
             } catch (error) {
                 status.text('Lỗi ngoại biên!');
                 return false;

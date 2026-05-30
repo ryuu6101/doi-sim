@@ -209,17 +209,6 @@
             let imei_index = 1;
             let slice_pos = 0;
 
-            // tach.forEach((value, index, self) => {
-            //     if (value.length == 9) boline[0] = value;
-            //     else if (value.length == 10) boline[imei_index++] = value;
-            //     else if (value.length == 20) boline[imei_index++] = value.slice(9, 19);
-
-            //     if (index + 1 == self.length) slice_pos = string.indexOf(value) + value.length;
-            // });
-
-            // let ghichu = string.slice(slice_pos).trim();
-            // if (ghichu != '' && !string.includes('母卡')) boline[3] = ghichu;
-
             boline = tach.map((value, index) => (value.length == 20) ? value.slice(9, 19) : value);
 
             if (!string.includes('母卡')) {
@@ -344,14 +333,6 @@
                 kqua.text(doi_sim['message']);
 
                 if (!doi_sim['success']) return;
-
-                // if (doi_sim.includes("|vl")) {
-                //     kqua.text(thongbaos[doi_sim.replace("|vl", "")] ?? "Lỗi khi đổi SIM cho thuê bao #404");
-                // } else {
-                //     kqua.text(doi_sim);
-                // }
-
-                // if (doi_sim != "1|vl" && doi_sim != "2|vl") return;
 
                 gprs.text('Đang bật GPRS ...');
 

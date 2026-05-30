@@ -88,7 +88,7 @@
                     return false;
                 }
 
-                return tach[1].slice(-9);
+                return tach[1].slice(2);
             } catch (error) {
                 message.text('');
                 noty('Đã xảy ra lỗi!', 'error');

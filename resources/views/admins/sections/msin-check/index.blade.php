@@ -141,7 +141,7 @@
 
                 let tach = result.split("|");
 
-                if (tach.length > 1) sdt.text(tach[1].slice(-9));
+                if (tach.length > 1) sdt.text(tach[1].slice(2));
                 else sdt.text('');
                 ghichu.text(result.replace("|", ""));
             } catch (error) {
