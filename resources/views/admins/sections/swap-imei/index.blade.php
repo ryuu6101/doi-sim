@@ -20,6 +20,16 @@
                             <input type="checkbox" class="custom-control-input" name="cho_phep_dao_lai" id="cho_phep_dao_lai">
                             <label class="custom-control-label" for="cho_phep_dao_lai">Cho phép đảo lại</label>
                         </div>
+
+                        <div class="custom-control custom-checkbox custom-control-inline">
+                            <input type="checkbox" class="custom-control-input" name="kich_hoat_gprs" id="kich_hoat_gprs">
+                            <label class="custom-control-label" for="kich_hoat_gprs">Kích hoạt GPRS</label>
+                        </div>
+
+                        <div class="custom-control custom-checkbox custom-control-inline">
+                            <input type="checkbox" class="custom-control-input" name="check_user" id="check_user">
+                            <label class="custom-control-label" for="check_user">Check user</label>
+                        </div>
                     </div>
                 </div>
                 <div class="row mb-2">
@@ -100,6 +110,8 @@
 
     let send_sms = false;
     let ignore_overlap = false;
+    let toggle_gprs = false;
+    let check_user = false;
     let delay = {{ $delay ?? 1 }};
     let timeout;
     let lines = [];
@@ -143,6 +155,8 @@
 
             send_sms = $('input[name="gui_sms"]').is(":checked");
             ignore_overlap = $('input[name="cho_phep_dao_lai"]').is(":checked");
+            toggle_gprs = $('input[name="kich_hoat_gprs"]').is(":checked");
+            check_user = $('input[name="check_user"]').is(":checked");
 
             if (cookies == '') {
                 noty('Không có Cookie, đăng nhập lại để tiếp tục!', 'error');
@@ -269,6 +283,21 @@
                     }
                 }
 
+                if (check_user) {
+                    let lay_ls_tb = await $.ajax({
+                        type: 'POST',
+                        url: "{{ route('lay-lsu-tbao.post') }}",
+                        data: {'sdt': '84'+sdt},
+                    });
+
+                    let ten_user = lay_ls_tb[0]?.[4] ?? '';
+
+                    if (ten_user != 'cuongpp_dng') {
+                        kqua.text('User không hợp lệ!');
+                        return;
+                    }
+                }
+
                 kqua.text('Kiểm tra IMEI ...');
 
                 let lay_imei = await $.ajax({
@@ -334,15 +363,17 @@
 
                 if (!doi_sim['success']) return;
 
-                gprs.text('Đang bật GPRS ...');
-
-                let kh_gprs = await $.ajax({
-                    type: 'POST',
-                    url: "{{ route('kich-hoat-gprs.post') }}",
-                    data: {'sdt': '84'+sdt},
-                });
-
-                gprs.text(kh_gprs);
+                if (toggle_gprs) {
+                    gprs.text('Đang bật GPRS ...');
+    
+                    let kh_gprs = await $.ajax({
+                        type: 'POST',
+                        url: "{{ route('kich-hoat-gprs.post') }}",
+                        data: {'sdt': '84'+sdt},
+                    });
+    
+                    gprs.text(kh_gprs);
+                }
 
                 if (send_sms) {
                     sms.text('Đang gửi SMS ...');
