@@ -1,7 +1,7 @@
 @extends('admins.layouts.master')
 
 @section('content')
-<div class="row flex-lg-nowrap">
+<div class="row">
     <div class="col-lg-auto col-12 mb-2">
         <div class="card">
             <div class="card-body">
@@ -32,7 +32,7 @@
             </div>
         </div>
     </div>
-    <div class="col">
+    <div class="col-12">
         <div class="table-responsive">
             <table class="table table-bordered table-xs bg-white">
                 <thead class="text-nowrap">
@@ -43,6 +43,10 @@
                         <th class="text-center">Chủ thuê bao</th>
                         <th class="text-center">Người đảo gần nhất</th>
                         <th class="text-center">Ngày đảo gần nhất</th>
+                        <th class="text-center">Mã DV</th>
+                        <th class="text-center">Tỉnh mới</th>
+                        <th class="text-center">Gói</th>
+                        <th class="text-center">Ngày kết thúc</th>
                     </tr>
                 </thead>
                 <tbody id="progress_list">
@@ -117,6 +121,10 @@
             row.append($('<td></td>'));
             row.append($('<td></td>'));
             row.append($('<td></td>'));
+            row.append($('<td></td>'));
+            row.append($('<td></td>'));
+            row.append($('<td></td>'));
+            row.append($('<td></td>'));
 
             $('#progress_list').append(row);
 
@@ -128,6 +136,7 @@
             let matinh = await layIMEI(row, line);
             matinh && await layTTKhTb(row, line, matinh);
             await layLSuTBao(row, line);
+            await layLsu3g(row, line);
 
             if (index < total) timeout = setTimeout(chay, delay * 1000);
             else stop();
@@ -186,6 +195,8 @@
         async function layLSuTBao(row, sdt) {
             let nguoi_thuc_hien = row.children().eq(4);
             let ngay_thuc_hien = row.children().eq(5);
+            let ma_dv = row.children().eq(6);
+            let tinh_moi = row.children().eq(7);
 
             nguoi_thuc_hien.text('Đang tìm kiếm ...');
 
@@ -200,9 +211,36 @@
 
                 nguoi_thuc_hien.text(lsu_gan_nhat[4] ?? '-');
                 ngay_thuc_hien.text(lsu_gan_nhat[0] ?? '-');
+                ma_dv.text(lsu_gan_nhat[1] ?? '-');
+                tinh_moi.text(lsu_gan_nhat[8] ?? '-');
             } catch (error) {
                 nguoi_thuc_hien.text('Lỗi ngoại biên!');
                 ngay_thuc_hien.text('Lỗi ngoại biên!');
+                ma_dv.text('Lỗi ngoại biên!');
+                tinh_moi.text('Lỗi ngoại biên!');
+            }
+        }
+
+        async function layLsu3g(row, sdt) {
+            let goi = row.children().eq(8);
+            let ngay_ket_thuc = row.children().eq(9);
+
+            goi.text('Đang tìm kiếm ...');
+
+            try {
+                let result = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('lay-lsu-3g.post') }}",
+                    data: {'sdt': sdt},
+                });
+
+                let lsu_gan_nhat = result[0] ?? [];
+
+                goi.text(lsu_gan_nhat[3] ?? '-');
+                ngay_ket_thuc.text(lsu_gan_nhat[6] ?? '-');
+            } catch (error) {
+                goi.text('Lỗi ngoại biên!');
+                ngay_ket_thuc.text('Lỗi ngoại biên!');
             }
         }
 
