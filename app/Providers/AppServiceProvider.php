@@ -12,7 +12,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $models = ['User', 'EsimReport', 'EsimHistory'];
+        $models = ['User', 'EsimReport', 'EsimHistory', 'DataUsage', 'GoogleConfig', 'GoogleToken'];
 
         foreach ($models as $key => $value) {
             $plural = Str::plural($value);

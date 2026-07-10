@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admins;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\DataUsages\DataUsageRepositoryInterface;
 use App\Repositories\EsimHistories\EsimHistoryRepositoryInterface;
 use App\Repositories\EsimReports\EsimReportRepositoryInterface;
 use App\Services\BrandNameService;
@@ -21,6 +22,7 @@ class EsimController extends Controller
         protected EsimService $esimService,
         protected EsimReportRepositoryInterface $esimReportRepos,
         protected EsimHistoryRepositoryInterface $esimHistoryRepos,
+        protected DataUsageRepositoryInterface $dataUsageRepos,
     ) {}
 
     public function ccbsLogin(Request $request) {
@@ -100,8 +102,42 @@ class EsimController extends Controller
 
     public function traCuuMI(Request $request) {
         $sdt = $request->input('sdt');
+        // $interval = $request->input('interval');
 
         return $this->ccosService->traCuuMI($sdt);
+
+        $tra_cuu_mi = $this->ccosService->traCuuMI($sdt);
+
+        $tach = explode('|', $tra_cuu_mi);
+
+        if (count($tach) <= 1) return [
+            'success' => false,
+            'message' => $tra_cuu_mi,
+        ];
+
+        $data_usages = $this->dataUsageRepos->getByMobileNumber($sdt)->sortByDesc('created_at');
+        $latest_data_usage = $data_usages->first();
+
+        if (!$latest_data_usage || $latest_data_usage->created_at->addHours((int)$interval) <= now()) {
+            $this->dataUsageRepos->create([
+                'sdt' => $sdt,
+                'data' => $tach[2],
+            ]);
+        }
+
+        $this->dataUsageRepos->deleteOld($sdt);
+
+        $data_usages_arr = $this->dataUsageRepos->getByMobileNumber($sdt)->sortByDesc('created_at')->take(4)->pluck('data')->toArray();
+
+        return [
+            'success' => true,
+            'data' => [
+                'name' => $tach[0],
+                'limit' => $tach[1].' GB',
+                'used' => $tach[2].' GB',
+                'data_usages' => $data_usages_arr,
+            ],
+        ];
     }
 
     public function daoSim(Request $request) {
@@ -203,19 +239,16 @@ class EsimController extends Controller
             $ttkh_splited = explode('|', $lay_ttkh);
             unset($ttkh_splited[0]);
             $ttkh = array_combine($ttkh_string_data, $ttkh_splited);
-        } else {
-            $tttb = [];
-            $ttkh = [];
-        }
+        } else return $lay_tttb;
 
         $dvu_tb = $this->ccbsService->docDvuTb($sdt);
-        if (is_string($dvu_tb)) return;
+        if (is_string($dvu_tb)) return $dvu_tb;
 
         $ls_tb = $this->ccbsService->layLsTBao($sdt);
-        if (is_string($ls_tb)) return;
+        if (is_string($ls_tb)) return $ls_tb;
 
         $ls_3g = $this->ccbsService->layLs3g($sdt);
-        if (is_string($ls_3g)) return;
+        if (is_string($ls_3g)) return $ls_tb;
 
         return view('admins.sections.subscriber-check.mobile-info', compact('tttb', 'ttkh', 'dvu_tb', 'ls_tb', 'ls_3g'));
     }

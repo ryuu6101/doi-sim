@@ -31,6 +31,8 @@
 	<!-- /theme JS files -->
 
     @stack('styles')
+
+	@livewireStyles
 </head>
 
 <body>
@@ -69,7 +71,11 @@
 
 	</div>
 
+	@livewire('google-config.edit-google-config')
+
 	@stack('modals')
+
+	@livewireScripts
 
 	<script>
 		$.ajaxSetup({
@@ -111,6 +117,16 @@
 	@if (session('error'))
 	<script>noty("{{ session('error') }}", 'error');</script>
 	@endif
+
+	<script>
+		$(document).on('close-modal', function(e) {
+			$(e.detail.modal).modal('hide');
+		});
+
+		$(document).on('notify', function(e) {
+			noty(e.detail.message, e.detail.type ?? 'success');
+		});
+	</script>
 
     @stack('scripts')
 

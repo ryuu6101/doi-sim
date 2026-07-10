@@ -1,9 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admins\EsimController;
+use App\Http\Controllers\Admins\GoogleController;
+use App\Http\Controllers\Admins\GoogleSheetController;
 use App\Http\Controllers\Admins\LoginController;
 use App\Http\Controllers\Admins\SectionController;
-use App\Http\Controllers\Admins\EsimController;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [LoginController::class, 'getLogin'])->name('login');
@@ -47,4 +49,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/kiem-tra-tttb', [EsimController::class, 'kiemTraTTTBao'])->name('kiem-tra-tttb.post');
     Route::post('/lay-lsu-tbao', [EsimController::class, 'layLSuTBao'])->name('lay-lsu-tbao.post');
     Route::post('/lay-lsu-3g', [EsimController::class, 'layLSu3g'])->name('lay-lsu-3g.post');
+
+    Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('google.redirect');
+    Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
+    Route::post('/google-sheet/read', [GoogleSheetController::class, 'read'])->name('google-sheet.read.post');
 });

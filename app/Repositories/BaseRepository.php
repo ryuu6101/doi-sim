@@ -82,4 +82,8 @@ abstract class BaseRepository implements RepositoryInterface
         if ($paginate > 0) return $list->paginate($paginate);
         else return $list->get();
     }
+
+    public function first() {
+        return $this->model->first();
+    }
 }

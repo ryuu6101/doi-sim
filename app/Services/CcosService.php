@@ -24,7 +24,6 @@ class CcosService
                         Chrome/115.0.5790.102 Safari/537.36",
             "Content-Type: application/x-www-form-urlencoded; charset=UTF-8",
             "Accept: application/json, text/javascript, */*; q=0.01",
-            "Content-Length: 23",
             "Accept-Encoding: gzip, deflate",
             "Accept-Language: en-US,en;q=0.8",
             "Sec-GPC: 1",
@@ -36,6 +35,7 @@ class CcosService
 
         try {
             $postData = 'type=GetMI&tb='.$sdt;
+            $this->httpHeader[] = "Content-Length: ".strlen($postData);
 
             curl_setopt_array($ch, [
                 CURLOPT_URL => "http://view360ccos.vnpt.vn/Ajax/HandlerThongTinThueBao.ashx",
@@ -48,7 +48,7 @@ class CcosService
             $response = curl_exec($ch);
             $decoded = json_decode($response);
 
-            if ($decoded->Code != 1) return $decoded->Message ?? 'Đã xảy ra lỗi!';
+            if ($decoded?->Code != 1) return $decoded->Message ?? 'Đã xảy ra lỗi!';
 
             $data = json_decode($decoded->Data);
 

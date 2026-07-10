@@ -42,4 +42,6 @@ interface RepositoryInterface
     public function getColumn($column);
 
     public function filter($params = [], $paginate = 0, $sort = 'asc', $sort_by = 'created_at');
+
+    public function first();
 }

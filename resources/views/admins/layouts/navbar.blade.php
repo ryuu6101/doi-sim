@@ -61,13 +61,39 @@
 
     <div class="d-flex flex-1 justify-content-end pr-3">
         <ul class="navbar-nav flex-row order-1 order-lg-2 flex-1 flex-lg-0 justify-content-end align-items-center">
-            <form id="logoutForm" action="{{ route('logout.post') }}" method="POST" class="d-none">
+            {{-- <form id="logoutForm" action="{{ route('logout.post') }}" method="POST" class="d-none">
                 @method('POST')
                 @csrf
             </form>
             <a href="#!" class="navbar-nav-link" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
                 <i class="icon-switch2"></i>
-            </a>
+            </a> --}}
+            <li class="nav-item nav-item-dropdown-lg dropdown dropdown-user h-100">
+                <a href="#" class="navbar-nav-link navbar-nav-link-toggler dropdown-toggle d-inline-flex align-items-center h-100" data-toggle="dropdown">
+                    <i class="icon-gear"></i>
+                </a>
+
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a href="#!" class="dropdown-item" data-toggle="modal" data-target="#editGoogleConfig">
+                        <i class="fa-brands fa-google"></i>
+                        Cấu hình Google Web App
+                    </a>
+                    <a href="{{ route('google.redirect') }}" class="dropdown-item">
+                        <i class="fa-solid fa-link"></i>
+                        Kết nối Google Sheet
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#!" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('logoutForm').submit();">
+                        <i class="icon-switch2"></i> 
+                        Đăng xuất
+                    </a>
+                </div>
+
+                <form id="logoutForm" action="{{ route('logout.post') }}" method="POST" class="d-none">
+                    @method('POST')
+                    @csrf
+                </form>
+            </li>
         </ul>
     </div>
 </div>

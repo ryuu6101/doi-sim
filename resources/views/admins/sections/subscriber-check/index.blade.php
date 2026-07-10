@@ -65,7 +65,7 @@
             } else if ([10,20].includes(number.length)) {
                 let imei = number.length == 20 ? number.slice(9,19) : number;
                 let sdt = await kiemTraIMEI(imei);
-                sdt && kiemTraTTTBao(sdt);
+                sdt ? kiemTraTTTBao(sdt) : kiemTraTTTBao(imei);
             } else {
                 noty('Dữ liệu không hợp lệ!', 'error');
             }
@@ -104,15 +104,19 @@
                 url: "{{ route('kiem-tra-tttb.post') }}",
                 data: {'sdt': sdt}
             }).done(function(data) {
-                $('#mobileInfoContainer').html(data);
-                $('#mobileInfoContainer')[0].scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
+                if (/<[a-z][\s\S]*>/i.test(data)) {
+                    $('#mobileInfoContainer').html(data);
+                    $('#mobileInfoContainer')[0].scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    message.text('');
+                } else {
+                    message.text(data);
+                }
             }).fail(function() {
                 noty('Đã xảy ra lỗi!', 'error');
-            }).always(function() {
-                $('#subscriberCheckForm input[name="number"] + span').text('');
+                message.text('');
             });
         }
     });
