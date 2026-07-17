@@ -340,7 +340,7 @@
 
                 let tach = lay_dvu.split("|");
                 if (tach.length < 2) {
-                    note.tach[0];
+                    note.text(tach[0]);
                     return;
                 }
 

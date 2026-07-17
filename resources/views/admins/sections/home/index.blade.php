@@ -259,7 +259,7 @@
             let ds_thanh_cong = doi_sim && await doisim(row, boline);
 
             if (ds_thanh_cong) {
-                toggle_gprs && kh_gprs(row, boline);
+                toggle_gprs ? await kh_gprs(row, boline) : await kt_gprs(row, boline);
                 send_sms && await gui_sms(row, boline);
             }
 
@@ -329,6 +329,35 @@
             } catch (error) {
                 status.text('Lỗi ngoại biên!');
                 return false;
+            }
+        }
+
+        async function kt_gprs(row, boline) {
+            let sdt = boline[0];
+
+            let gprs = row.children().eq(5);
+
+            gprs.text('Kiểm tra trạng thái ...');
+
+            try {
+                let kt_gprs = await $.ajax({
+                    type: 'POST',
+                    url: "{{ route('lay-dvu.post') }}",
+                    data: {
+                        'sdt': '84'+sdt,
+                        'dich_vu': 'GPRS',
+                    },
+                });
+
+                let tach = lay_dvu.split("|");
+                if (tach.length < 2) {
+                    gprs.text(tach[0]);
+                    return;
+                }
+
+                gprs.text(tach[1] == 0 ? "ĐANG ĐÓNG" : "ĐANG MỞ");
+            } catch (error) {
+                gprs.text('Lỗi ngoại biên!');
             }
         }
 
