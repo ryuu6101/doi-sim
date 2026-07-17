@@ -85,8 +85,8 @@
                     let errors = xhr.responseJSON.errors;
                     $.each(errors, (key, value) => noty(value[0], 'error'));
                 } else {
-                    console.log(error);
-                    noty('Lỗi ngoại biên!', 'error');
+                    console.log(xhr);
+                    noty(xhr?.responseJSON?.message ?? 'Lỗi ngoại biên!', 'error');
                 }
             }).always(function() {
                 btn_import.prop('disabled', false);

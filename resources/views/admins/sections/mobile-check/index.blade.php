@@ -45,6 +45,7 @@
                         <th class="text-center">Ngày đảo gần nhất</th>
                         <th class="text-center">Mã DV</th>
                         <th class="text-center">Tỉnh mới</th>
+                        <th class="text-center">Ghi chú</th>
                         <th class="text-center">Gói</th>
                         <th class="text-center">Ngày kết thúc</th>
                     </tr>
@@ -125,6 +126,7 @@
             row.append($('<td></td>'));
             row.append($('<td></td>'));
             row.append($('<td></td>'));
+            row.append($('<td></td>'));
 
             $('#progress_list').append(row);
 
@@ -197,6 +199,7 @@
             let ngay_thuc_hien = row.children().eq(5);
             let ma_dv = row.children().eq(6);
             let tinh_moi = row.children().eq(7);
+            let ghi_chu = row.children().eq(8);
 
             nguoi_thuc_hien.text('Đang tìm kiếm ...');
 
@@ -213,17 +216,19 @@
                 ngay_thuc_hien.text(lsu_gan_nhat[0] ?? '-');
                 ma_dv.text(lsu_gan_nhat[1] ?? '-');
                 tinh_moi.text(lsu_gan_nhat[8] ?? '-');
+                ghi_chu.text(lsu_gan_nhat[3] ?? '-');
             } catch (error) {
                 nguoi_thuc_hien.text('Lỗi ngoại biên!');
                 ngay_thuc_hien.text('Lỗi ngoại biên!');
                 ma_dv.text('Lỗi ngoại biên!');
                 tinh_moi.text('Lỗi ngoại biên!');
+                ghi_chu.text('Lỗi ngoại biên!');
             }
         }
 
         async function layLsu3g(row, sdt) {
-            let goi = row.children().eq(8);
-            let ngay_ket_thuc = row.children().eq(9);
+            let goi = row.children().eq(9);
+            let ngay_ket_thuc = row.children().eq(10);
 
             goi.text('Đang tìm kiếm ...');
 

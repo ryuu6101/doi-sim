@@ -16,6 +16,9 @@ class GoogleSheetController extends Controller
         $validated = $request->validate([
             'sheet_id' => 'required',
             'range' => 'required',
+        ], [
+            'sheet_id.required' => 'Vui lòng nhập Sheet ID',
+            'range.required' => 'Vui lòng nhập phạm vi',
         ]);
 
         $result = $this->googleSheetService->read($validated['sheet_id'], $validated['range']);

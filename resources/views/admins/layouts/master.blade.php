@@ -128,6 +128,10 @@
 		});
 	</script>
 
+	<script>
+		let mobile_headers = ['138'];
+	</script>
+
     @stack('scripts')
 
 </body>

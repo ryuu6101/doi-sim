@@ -167,7 +167,7 @@
                 block: 'end'
             });
 
-            if ([9,11].includes(line.length)) {
+            if ([9,11].includes(line.length) || mobile_headers.some(mobile_header => line.startsWith(mobile_header))) {
                 let sdt = line.length == 11 ? line.slice(-9) : line;
                 row.children().eq(1).text(sdt);
                 await kiemTraTB(row, sdt) && await layDVu(row, sdt);
