@@ -349,7 +349,7 @@
                     },
                 });
 
-                let tach = lay_dvu.split("|");
+                let tach = kt_gprs.split("|");
                 if (tach.length < 2) {
                     gprs.text(tach[0]);
                     return;

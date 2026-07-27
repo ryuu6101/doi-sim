@@ -6,7 +6,8 @@
         cursor: pointer;
     }
     th.sorttable_sorted::after, 
-    th.sorttable_sorted_reverse::after {
+    th.sorttable_sorted_reverse::after,
+    th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after {
         font-family: "Font Awesome 7 Free";
         display: inline-block;
         margin-left: 0.5rem;
@@ -18,6 +19,11 @@
     th.sorttable_sorted_reverse::after {
         content: "\f0d8";
         font-weight: 900;
+    }
+    th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after { 
+        content: "\f0dc";
+        font-weight: 900;
+        font-size: 11px;
     }
     #sorttable_sortfwdind, #sorttable_sortrevind { display: none; }
 
@@ -93,7 +99,7 @@
                         <th class="text-center sorttable_nosort">Tên gói</th>
                         <th class="text-center sorttable_numeric">Dung lượng tối đa</th>
                         <th class="text-center sorttable_numeric">Dung lượng sử dụng</th>
-                        <th class="text-center" colspan="3">So sánh dung lượng</th>
+                        <th class="text-center sorttable_nosort" colspan="3">So sánh dung lượng</th>
                     </tr>
                 </thead>
                 <tbody id="progress_list">
