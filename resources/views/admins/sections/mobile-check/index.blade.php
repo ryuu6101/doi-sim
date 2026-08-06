@@ -40,6 +40,7 @@
                         <th class="text-center" style="width:5rem">STT</th>
                         <th class="text-center">Số thuê bao</th>
                         <th class="text-center">Số IMEI</th>
+                        <th class="text-center">Loại TB</th>
                         <th class="text-center">Chủ thuê bao</th>
                         <th class="text-center">Người đảo gần nhất</th>
                         <th class="text-center">Ngày đảo gần nhất</th>
@@ -127,6 +128,7 @@
             row.append($('<td></td>'));
             row.append($('<td></td>'));
             row.append($('<td></td>'));
+            row.append($('<td></td>'));
 
             $('#progress_list').append(row);
 
@@ -145,8 +147,10 @@
         }
 
         async function layIMEI(row, sdt) {
-            let cell = row.children().eq(2);
-            cell.text('Đang tìm kiếm ...');
+            let imei = row.children().eq(2);
+            let loai_tb = row.children().eq(3);
+
+            imei.text('Đang tìm kiếm ...');
 
             try {
                 let result = await $.ajax({
@@ -154,28 +158,29 @@
                     url: "{{ route('lay-tttb-v4.post') }}",
                     data: {
                         'sdt': sdt,
-                        'string_data': ['so_msin', 'ma_tinh'],
+                        'string_data': ['so_msin', 'loai_tb', 'ma_tinh'],
                     },
                 });
 
                 if (!result.includes("OK|")) {
-                    cell.text("Vui lòng đăng nhập lại!");
+                    imei.text("Vui lòng đăng nhập lại!");
                     return false;
                 }
 
                 let tach = result.split("|");
 
-                cell.text(tach[1]);
+                imei.text(tach[1]);
+                loai_tb.text(tach[2]);
 
-                return tach[2];
+                return tach[3];
             } catch (error) {
-                cell.text('Lỗi ngoại biên!');
+                imei.text('Lỗi ngoại biên!');
                 return false;
             }
         }
 
         async function layTTKhTb(row, sdt, matinh) {
-            let cell = row.children().eq(3);
+            let cell = row.children().eq(4);
             cell.text('Đang tìm kiếm ...');
 
             try {
@@ -195,11 +200,11 @@
         }
 
         async function layLSuTBao(row, sdt) {
-            let nguoi_thuc_hien = row.children().eq(4);
-            let ngay_thuc_hien = row.children().eq(5);
-            let ma_dv = row.children().eq(6);
-            let tinh_moi = row.children().eq(7);
-            let ghi_chu = row.children().eq(8);
+            let nguoi_thuc_hien = row.children().eq(5);
+            let ngay_thuc_hien = row.children().eq(6);
+            let ma_dv = row.children().eq(7);
+            let tinh_moi = row.children().eq(8);
+            let ghi_chu = row.children().eq(9);
 
             nguoi_thuc_hien.text('Đang tìm kiếm ...');
 
@@ -227,8 +232,8 @@
         }
 
         async function layLsu3g(row, sdt) {
-            let goi = row.children().eq(9);
-            let ngay_ket_thuc = row.children().eq(10);
+            let goi = row.children().eq(10);
+            let ngay_ket_thuc = row.children().eq(11);
 
             goi.text('Đang tìm kiếm ...');
 

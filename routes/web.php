@@ -27,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/esim-report/statistical', [SectionController::class, 'listEsimReport'])->name('esim-report.statistical.index');
     Route::get('/toggle-services', [SectionController::class, 'toggleServices'])->name('toggle-services.index');
     Route::get('/subscriber-check', [SectionController::class, 'subscriberCheck'])->name('subscriber-check.index');
+    Route::get('/ccos/subscriber-check', [SectionController::class, 'subscriberCheckCcos'])->name('subscriber-check-ccos.index');
     
     Route::post('/ccbs-login', [EsimController::class, 'ccbsLogin'])->name('ccbs-login.post');
     Route::post('/doi-sim', [EsimController::class, 'doiSim'])->name('doi-sim.post');
@@ -49,6 +50,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/kiem-tra-tttb', [EsimController::class, 'kiemTraTTTBao'])->name('kiem-tra-tttb.post');
     Route::post('/lay-lsu-tbao', [EsimController::class, 'layLSuTBao'])->name('lay-lsu-tbao.post');
     Route::post('/lay-lsu-3g', [EsimController::class, 'layLSu3g'])->name('lay-lsu-3g.post');
+    Route::post('/lay-tt-khtb', [EsimController::class, 'layTTKhTb'])->name('lay-tt-khtb.post');
+    Route::post('/tra-cuu-tttb-ccos', [EsimController::class, 'traCuuTTTBaoCCOS'])->name('tra-cuu-tttb-ccos.post');
 
     Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('google.redirect');
     Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');

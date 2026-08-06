@@ -254,21 +254,6 @@
                 used.text(tach[2] ?? '');
 
                 ss_dl && saved.text(tach[2] ?? '');
-
-                // if (result['success']) {
-                //     let data = result['data'];
-
-                //     name.text(data['name'] ?? '');
-                //     limit.text(data['limit'] ?? '');
-                //     used.text(data['used'] ?? '');
-
-                //     let data_usages = data['data_usages'];
-                //     let index = 5;
-
-                //     data_usages.forEach(item => row.children().eq(index++).text(item));
-                // } else {
-                //     name.text(result['message']);
-                // }
             } catch (error) {
                 name.text('Lỗi ngoại biên!');
             }

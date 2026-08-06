@@ -62,4 +62,37 @@ class CcosService
             return "Đã xảy ra lỗi!";
         }
     }
+
+    public function traCuuTTTBao($sdt, $string_data) {
+        $ch = curl_init();
+
+        try {
+            $postData = 'type=GetInfo&tb='.$sdt;
+            $this->httpHeader[] = "Content-Length: ".strlen($postData);
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => "http://view360ccos.vnpt.vn/Ajax/HandlerThongTinThueBao.ashx",
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $postData,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_HTTPHEADER => $this->httpHeader,
+            ]);
+
+            $response = curl_exec($ch);
+            $decoded = json_decode($response, true);
+            
+            if (isset($decoded['Message'])) return $decoded['Message'];
+            
+            $data = "OK";
+
+            foreach ($string_data as $key => $value) {
+                $data .= "|".($decoded[$value] ?? '');
+            }
+
+            return $data;
+        } catch (Exception $e) {
+            throw $e;
+            return "Đã xảy ra lỗi!";
+        }
+    }
 }

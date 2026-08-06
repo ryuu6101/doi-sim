@@ -268,4 +268,19 @@ class EsimController extends Controller
         $ls_3g = $this->ccbsService->layLs3g($sdt);
         return is_array($ls_3g) ? $ls_3g : [];
     }
+
+    public function layTTKhTb(Request $request) {
+        $sdt = $request->input('sdt');
+        $matinh = $request->input('matinh');
+        $string_data = $request->input('string_data');
+
+        return $this->ccbsService->layTTKhTb($sdt, $matinh, $string_data);
+    }
+
+    public function traCuuTTTBaoCCOS(Request $request) {
+        $sdt = $request->input('sdt');
+        $string_data = $request->input('string_data');
+
+        return $this->ccosService->traCuuTTTBao($sdt, $string_data);
+    }
 }

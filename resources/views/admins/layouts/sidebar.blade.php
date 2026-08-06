@@ -122,6 +122,13 @@
                     </a>
                 </li>
 
+                <li class="nav-item">
+                    <a href="{{ route('subscriber-check-ccos.index') }}" class="nav-link">
+                        <i class="fa-solid fa-eye"></i>
+                        <span>Tra cứu thuê bao CCOS</span>
+                    </a>
+                </li>
+
             </ul>
         </div>
         <!-- /main navigation -->

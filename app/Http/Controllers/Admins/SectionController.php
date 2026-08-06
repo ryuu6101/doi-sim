@@ -90,4 +90,8 @@ class SectionController extends Controller
     public function subscriberCheck() {
         return view('admins.sections.subscriber-check.index');
     }
+
+    public function subscriberCheckCcos() {
+        return view('admins.sections.subscriber-check-ccos.index');
+    }
 }
