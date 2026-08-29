@@ -36,7 +36,7 @@ class GoogleService
     {
         $client = $this->getClient();
 
-        $token = $this->tokenRepo->getToken();
+        $token = $this->tokenRepo->getLatestToken();
 
         if (!$token) {
             throw new \RuntimeException('Google token not found');
